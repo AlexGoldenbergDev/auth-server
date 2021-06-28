@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Invitations</title>
+</head>
+<body>
+
+<form name='f' th:action="@{/admin/invitations}" method='POST'>
+    <input type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}" />
+    <button type="submit">Create New</button>
+
+</form>
+<table>
+   <tr>
+       <th>ID</th>
+       <th>Creation Date</th>
+       <th>Controls</th>
+   </tr>
+    <tr th:each="invitation: ${invitations}">
+        <td th:utext="${invitation.getId()}"></td>
+        <td th:utext="${invitation.getCreationDate()}"></td>
+        <td>
+            <form action="#" th:action="@{'/admin/invitations/{id}'(id=${invitation.getId()})}" th:method="DELETE" >
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"
+                />
+
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
+

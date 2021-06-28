@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignments Master</title>
+</head>
+<body>
+
+<form name='f' th:action="@{/admin/users/{id}/role(id=${id})}" th:object="${dto}" method='POST'>
+    <input type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}" />
+
+
+
+    <select th:field="*{role}">
+        <option th:each="role : ${roles}"  th:text="${role}" th:value="${role}"></option>
+    </select>
+
+
+    <button type="submit">Submit</button>
+
+</form>
+
+</body>
+</html>
+

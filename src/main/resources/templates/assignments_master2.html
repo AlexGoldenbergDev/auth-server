@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignments Master</title>
+</head>
+<body>
+
+<form name='f' th:action="@{/admin/assignments/master/{assignment}/{user}(assignment=${assignment}, user=${user})}" th:object="${dto}" method='POST'>
+    <input type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}" />
+
+    <input type="hidden" th:field="*{assignment}" th:value="${assignment}">
+
+
+    <div th:if="${fields} != null">
+        <div th:each="field : ${fields.entrySet()}">
+            <label th:value="${field.key}"></label>
+
+            <div th:switch="${field.value.getOptions() == null && field.value.getOptions().isEmpty()}">
+                <input th:case="${true}" type="text" th:value="${field.value.getDef() == null ? '' : field.value.getDef()}">
+
+                <select th:case="${false}" th:field="*{fields['__${field.key}__']}">
+                    <option th:each="option : ${field.value.getOptions()}"  th:text="${option}" th:value="${option}"></option>
+                </select>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <button type="submit">Submit</button>
+
+</form>
+
+</body>
+</html>
+

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignments</title>
+</head>
+<body>
+
+<table>
+    <tr>
+        <th>User Name</th>
+        <th th:each="assignment : ${assignments}" th:utext="${assignment}"></th>
+    </tr>
+    <tr th:each="user: ${assignmentsMap.keySet()}">
+        <td th:utext="${user.getUsername()}"></td>
+        <td th:each="assignment : ${assignments}">
+            <div th:if="${assignmentsMap.get(user) != null && assignmentsMap.get(user).get(assignment) != null}">
+                <form action="#" th:action="@{'/admin/assignments/{id}'(id=${assignmentsMap.get(user).get(assignment).getId()})}" th:method="DELETE" >
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"
+                    />
+                    <button type="submit">Delete</button>
+                </form>
+            </div>
+            <div th:if="${assignmentsMap.get(user) == null || assignmentsMap.get(user).get(assignment) == null}">
+                <button >
+                    <a th:href="@{/admin/assignments/master/{assignment}/{user}(assignment=${assignment}, user=${user.getId().toString()})}">Add</a>
+                </button>
+            </div>
+        </td>
+
+    </tr>
+</table>
+
+</body>
+</html>
