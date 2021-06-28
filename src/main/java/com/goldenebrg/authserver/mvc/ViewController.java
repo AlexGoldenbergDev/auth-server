@@ -48,7 +48,7 @@ public class ViewController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+        if (!"anonymousUser".equals(authentication.getPrincipal())) {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             @NonNull UUID id = principal.getUser().getId();
             modelAndView.addObject("user", userService.getUserById(id));
@@ -93,27 +93,27 @@ public class ViewController {
     }
 
     @PostMapping("/signup")
-    public String registerUserAccount
+    public ModelAndView registerUserAccount
             (@ModelAttribute("user")  UserDto userDto,
              @ModelAttribute("uuid")  String uuid,
              HttpServletRequest request, Errors errors) {
 
+        ModelAndView modelAndView = new ModelAndView("index");
         try {
-            UUID id = UUID.fromString(uuid);
-            userDto.setUuid(id);
+            UUID requestIid = UUID.fromString(uuid);
+            userDto.setUuid(UUID.randomUUID());
             Authentication authenticationToken = new UsernamePasswordAuthenticationToken(userDto.getLogin(), userDto.getPassword());
-            userService.registerNewUserAccount(userDto);
-            userService.deleteRequestById(id);
-
+            modelAndView.addObject("user", userService.registerNewUserAccount(userDto, requestIid));
             SecurityContext sc = SecurityContextHolder.getContext();
             sc.setAuthentication(authenticationToken);
             HttpSession session = request.getSession(true);
             session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
         } catch (Exception uaeEx) {
+            modelAndView.addObject("login", new LoginDto());
 
         }
 
-        return "index";
+        return modelAndView;
     }
 
     @GetMapping("/admin/users")

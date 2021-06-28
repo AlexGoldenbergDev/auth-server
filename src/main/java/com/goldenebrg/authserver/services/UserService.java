@@ -21,7 +21,7 @@ public interface UserService {
     /**
      * Creates a new Invitation {@link Request}
      */
-    UUID createRequest(RequestForm email);
+    void createRequest(RequestForm email);
 
     /**
      * Validates presence of {@link Request} with following UUID
@@ -45,8 +45,9 @@ public interface UserService {
     /**
      * Creates a new {@link User};
      * @param userDto - {@link UserDto} Sign In Form
+     * @param requestId - request id
      */
-    void registerNewUserAccount(@NonNull UserDto userDto);
+    User registerNewUserAccount(@NonNull UserDto userDto, UUID requestId);
 
 
     List<User> getUsers();

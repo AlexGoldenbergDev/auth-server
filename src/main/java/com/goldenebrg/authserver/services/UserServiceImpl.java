@@ -48,11 +48,10 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UUID createRequest(RequestForm requestForm) {
+    public void createRequest(RequestForm requestForm) {
         UUID uuid = createUniqueUUID();
         Request request = new Request(uuid, new Date(), requestForm.getEmail());
         requestDao.save(request);
-        return uuid;
     }
 
     /**
@@ -102,11 +101,15 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
-    public void registerNewUserAccount(@NonNull UserDto userDto) {
+    public User registerNewUserAccount(@NonNull UserDto userDto, UUID requestIid) {
+        Request request = requestDao.getOne(requestIid);
         String role = configurationService.getDefaultRole();
-        User user = new User(userDto.getUuid(), userDto.getLogin(), userDto.getEmail(), role,
+        User user = new User(userDto.getUuid(), userDto.getLogin(), request.getEmail(), role,
                 passwordEncoder.encode(userDto.getPassword()));
         userDao.save(user);
+        deleteRequestById(requestIid);
+        return user;
+
     }
 
     @Override

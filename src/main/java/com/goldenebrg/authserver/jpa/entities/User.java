@@ -52,6 +52,6 @@ public class User implements Serializable {
 
 
     public User(UUID id, String username, String email, String role, String password) {
-        this(id, username, email, password, role, true);
+        this(id, email, username, password, role, true);
     }
 }
