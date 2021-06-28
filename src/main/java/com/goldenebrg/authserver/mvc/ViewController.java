@@ -1,9 +1,6 @@
 package com.goldenebrg.authserver.mvc;
 
-import com.goldenebrg.authserver.rest.beans.AssignmentForm;
-import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
-import com.goldenebrg.authserver.rest.beans.LoginDto;
-import com.goldenebrg.authserver.rest.beans.UserDto;
+import com.goldenebrg.authserver.rest.beans.*;
 import com.goldenebrg.authserver.security.auth.service.UserDetailsImpl;
 import com.goldenebrg.authserver.services.AssignmentsService;
 import com.goldenebrg.authserver.services.UserService;
@@ -160,12 +157,13 @@ public class ViewController {
     public ModelAndView invitations() {
         ModelAndView modelAndView = new ModelAndView("invitations");
         modelAndView.addObject("invitations", userService.getInvitations());
+        modelAndView.addObject("requestForm", new RequestForm());
         return modelAndView;
     }
 
     @PostMapping("/admin/invitations")
-    public RedirectView addInvitation(@ModelAttribute("email") String email) {
-        userService.createRequest(email);
+    public RedirectView addInvitation(@ModelAttribute("requestForm") RequestForm requestForm) {
+        userService.createRequest(requestForm);
         return new RedirectView("/admin/invitations");
     }
 

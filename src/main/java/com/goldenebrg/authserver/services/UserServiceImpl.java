@@ -5,6 +5,7 @@ import com.goldenebrg.authserver.jpa.dao.UserDao;
 import com.goldenebrg.authserver.jpa.entities.Request;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
+import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -47,9 +48,9 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UUID createRequest(String email) {
+    public UUID createRequest(RequestForm requestForm) {
         UUID uuid = createUniqueUUID();
-        Request request = new Request(uuid, new Date(), email);
+        Request request = new Request(uuid, new Date(), requestForm.getEmail());
         requestDao.save(request);
         return uuid;
     }
@@ -83,7 +84,6 @@ public class UserServiceImpl implements UserService{
 
 
     @Scheduled(cron = "0 0 0 * *")
-    @Override
     public void deleteOldRequest() {
         Calendar calendar = Calendar.getInstance();
         Date time0 = calendar.getTime();
@@ -112,11 +112,6 @@ public class UserServiceImpl implements UserService{
     @Override
     public List<User> getUsers() {
         return userDao.findAll();
-    }
-
-    @Override
-    public User getUser(String user) {
-        return userDao.findUserByUsername(user);
     }
 
     @Override

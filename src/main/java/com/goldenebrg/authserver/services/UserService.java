@@ -3,6 +3,7 @@ package com.goldenebrg.authserver.services;
 import com.goldenebrg.authserver.jpa.entities.Request;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
+import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import org.springframework.lang.NonNull;
 
@@ -20,7 +21,7 @@ public interface UserService {
     /**
      * Creates a new Invitation {@link Request}
      */
-    UUID createRequest(String email);
+    UUID createRequest(RequestForm email);
 
     /**
      * Validates presence of {@link Request} with following UUID
@@ -34,11 +35,6 @@ public interface UserService {
      * @return List of all persisted requests
      */
     List<Request> getInvitations();
-
-    /**
-     *  {@link Request} Clean Up
-     */
-    void deleteOldRequest();
 
     /**
      * Deletes specific {@link Request}
@@ -55,7 +51,6 @@ public interface UserService {
 
     List<User> getUsers();
 
-    User getUser(String user);
 
     void deleteUserById(UUID id);
 
