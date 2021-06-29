@@ -1,12 +1,17 @@
 package com.goldenebrg.authserver.services;
 
-import com.goldenebrg.authserver.jpa.dao.RequestDao;
+import com.goldenebrg.authserver.jpa.dao.InvitationDao;
+import com.goldenebrg.authserver.jpa.dao.PasswordResetDao;
+import com.goldenebrg.authserver.jpa.dao.TokensDao;
 import com.goldenebrg.authserver.jpa.dao.UserDao;
-import com.goldenebrg.authserver.jpa.entities.Request;
+import com.goldenebrg.authserver.jpa.entities.InvitationToken;
+import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
+import com.goldenebrg.authserver.mail.MailService;
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
+import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,26 +19,33 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Supplier;
 
 @Service
 public class UserServiceImpl implements UserService{
 
     private final ServerConfigurationService configurationService;
     private final PasswordEncoder passwordEncoder;
-    private final RequestDao requestDao;
+    private final InvitationDao invitationDao;
+    private final PasswordResetDao passwordResetDao;
     private final UserDao userDao;
+    private final MailService mailService;
     private List<String> userRoles;
 
 
     @Autowired
-    public UserServiceImpl(ServerConfigurationService configurationService, PasswordEncoder passwordEncoder, RequestDao requestDao, UserDao userDao) {
+    public UserServiceImpl(MailService mailService,
+                           ServerConfigurationService configurationService,
+                           PasswordEncoder passwordEncoder,
+                           InvitationDao invitationDao,
+                           PasswordResetDao passwordResetDao,
+                           UserDao userDao) {
+        this.mailService = mailService;
         this.configurationService = configurationService;
         this.passwordEncoder = passwordEncoder;
-        this.requestDao = requestDao;
+        this.invitationDao = invitationDao;
+        this.passwordResetDao = passwordResetDao;
         this.userDao = userDao;
     }
 
@@ -48,10 +60,21 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void createRequest(RequestForm requestForm) {
+    public void createInvitation(@NotNull RequestForm requestForm) {
         UUID uuid = createUniqueUUID();
-        Request request = new Request(uuid, new Date(), requestForm.getEmail());
-        requestDao.save(request);
+        InvitationToken invitationToken = new InvitationToken(uuid, new Date(), requestForm.getEmail());
+        mailService.sendSignUpRequest(invitationDao.save(invitationToken));
+    }
+
+    @Override
+    public void createPasswordReset(@NotNull RequestForm requestForm) {
+        String email = requestForm.getEmail();
+        Optional.ofNullable(userDao.findUserByEmail(email)).ifPresent(user -> {
+            UUID uuid = createUniqueUUID();
+            PasswordResetToken passwordResetToken = new PasswordResetToken(uuid, new Date(), requestForm.getEmail());
+            mailService.sendPasswordResetEmail(passwordResetDao.save(passwordResetToken));
+        });
+
     }
 
     /**
@@ -71,40 +94,44 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public boolean isRequestUUIDExists(UUID uuid) {
-        return requestDao.existsById(uuid);
+        return invitationDao.existsById(uuid);
     }
 
 
     @Override
-    public List<Request> getInvitations() {
-        return requestDao.findAll();
+    public List<InvitationToken> getInvitations() {
+        return invitationDao.findAll();
     }
 
 
 
     @Scheduled(cron = "0 0 0 * *")
-    public void deleteOldRequest() {
+    public void deleteOldRequests() {
+        Date startTime = new Date();
+        deleteOldRequests(startTime, configurationService::getSignUpTokenExpirationHours, invitationDao);
+        deleteOldRequests(startTime, configurationService::getPasswordResetTokenExpirationHours, passwordResetDao);
+    }
+
+    void deleteOldRequests(Date startTime, Supplier<Integer> supplier, TokensDao dao) {
         Calendar calendar = Calendar.getInstance();
-        Date time0 = calendar.getTime();
-
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
-        Date time1 = calendar.getTime();
-
-        requestDao.deleteAllByCreationDateIsBetween(time0, time1);
+        calendar.setTime(startTime);
+        calendar.add(Calendar.HOUR, -1 * supplier.get());
+        Date time = calendar.getTime();
+        dao.deleteAllByCreationDateBefore(time);
     }
 
 
     @Override
     public void deleteRequestById(UUID uuid) {
-        requestDao.deleteById(uuid);
+        invitationDao.deleteById(uuid);
     }
 
 
     @Override
     public User registerNewUserAccount(@NonNull UserDto userDto, UUID requestIid) {
-        Request request = requestDao.getOne(requestIid);
+        InvitationToken invitationToken = invitationDao.getOne(requestIid);
         String role = configurationService.getDefaultRole();
-        User user = new User(userDto.getUuid(), userDto.getLogin(), request.getEmail(), role,
+        User user = new User(userDto.getUuid(), userDto.getLogin(), invitationToken.getEmail(), role,
                 passwordEncoder.encode(userDto.getPassword()));
         userDao.save(user);
         deleteRequestById(requestIid);

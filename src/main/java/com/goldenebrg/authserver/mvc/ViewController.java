@@ -53,24 +53,28 @@ public class ViewController {
             @NonNull UUID id = principal.getUser().getId();
             modelAndView.addObject("user", userService.getUserById(id));
         }
-        else {
+        else
             modelAndView.addObject("login", new LoginDto());
 
-        }
 
 
         return modelAndView;
     }
 
-   /* @GetMapping({ "/user" })
-    public ModelAndView user() {
-        ModelAndView modelAndView = new ModelAndView("user");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
-        @NonNull UUID id = principal.getUser().getId();
-        modelAndView.addObject("user", userService.getUserById(id));
+
+    @GetMapping("/reset/send")
+    public ModelAndView resetRequest() {
+        ModelAndView modelAndView = new ModelAndView("reset");
+        modelAndView.addObject("resetForm", new RequestForm());
         return modelAndView;
-    }*/
+    }
+
+    @PostMapping("/reset/send")
+    public ModelAndView resetRequest(@ModelAttribute("resetForm") RequestForm resetForm) {
+        userService.createPasswordReset(resetForm);
+        return index();
+    }
+
 
     @GetMapping("/signup/{invitation}")
     public ModelAndView signUp(@PathVariable String invitation) {
@@ -163,7 +167,7 @@ public class ViewController {
 
     @PostMapping("/admin/invitations")
     public RedirectView addInvitation(@ModelAttribute("requestForm") RequestForm requestForm) {
-        userService.createRequest(requestForm);
+        userService.createInvitation(requestForm);
         return new RedirectView("/admin/invitations");
     }
 

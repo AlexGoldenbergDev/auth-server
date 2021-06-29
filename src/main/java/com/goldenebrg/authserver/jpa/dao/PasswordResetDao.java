@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Date;
 import java.util.UUID;
 
-public interface PasswordResetDao extends JpaRepository<PasswordResetToken, UUID> {
+public interface PasswordResetDao extends JpaRepository<PasswordResetToken, UUID>, TokensDao {
 
-    void deleteAllByCreationDateIsBetween(Date date0, Date date1);
+    void deleteAllByCreationDateBefore(Date date);
 }

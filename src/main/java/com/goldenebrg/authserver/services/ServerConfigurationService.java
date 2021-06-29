@@ -11,4 +11,10 @@ public interface ServerConfigurationService {
     List<String> getRoles();
 
     String getDefaultRole();
+
+    int getSignUpTokenExpirationHours();
+
+    int getPasswordResetTokenExpirationHours();
+
+    String getHost();
 }

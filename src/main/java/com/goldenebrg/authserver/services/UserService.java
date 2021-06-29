@@ -1,6 +1,6 @@
 package com.goldenebrg.authserver.services;
 
-import com.goldenebrg.authserver.jpa.entities.Request;
+import com.goldenebrg.authserver.jpa.entities.InvitationToken;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
@@ -12,33 +12,35 @@ import java.util.UUID;
 
 /**
  * @author Alex Goldenberg
- * Service for {@link Request} and {@link User} managment
+ * Service for {@link InvitationToken} and {@link User} managment
  */
 public interface UserService {
 
     List<String> getAvailableRoles();
 
     /**
-     * Creates a new Invitation {@link Request}
+     * Creates a new Invitation {@link InvitationToken}
      */
-    void createRequest(RequestForm email);
+    void createInvitation(RequestForm email);
+
+    void createPasswordReset(RequestForm requestForm);
 
     /**
-     * Validates presence of {@link Request} with following UUID
-     * @param uuid - {@link Request#getId()}
+     * Validates presence of {@link InvitationToken} with following UUID
+     * @param uuid - {@link InvitationToken#getId()}
      */
     boolean isRequestUUIDExists(UUID uuid);
 
 
     /**
-     * Returns full {@link Request} list
+     * Returns full {@link InvitationToken} list
      * @return List of all persisted requests
      */
-    List<Request> getInvitations();
+    List<InvitationToken> getInvitations();
 
     /**
-     * Deletes specific {@link Request}
-     * @param uuid - {@link Request#getId()}
+     * Deletes specific {@link InvitationToken}
+     * @param uuid - {@link InvitationToken#getId()}
      */
     void deleteRequestById(UUID uuid);
 

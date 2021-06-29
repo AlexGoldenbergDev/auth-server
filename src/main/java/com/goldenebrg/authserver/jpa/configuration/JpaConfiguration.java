@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * JPA Configuration Component
  */
 @Configuration
-@EnableJpaRepositories(basePackages = "com.goldenebrg.authserver")
+@EnableJpaRepositories(basePackages = "com.goldenebrg.authserver.jpa.dao")
 @EnableTransactionManagement
 public class JpaConfiguration {
 
