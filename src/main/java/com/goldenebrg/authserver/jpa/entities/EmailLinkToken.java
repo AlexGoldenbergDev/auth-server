@@ -2,20 +2,18 @@ package com.goldenebrg.authserver.jpa.entities;
 
 import lombok.*;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
 @EqualsAndHashCode
 @ToString
 @NoArgsConstructor
 @RequiredArgsConstructor
-@Table(name = "request")
-public class Request implements Serializable {
+@MappedSuperclass
+public class EmailLinkToken implements Serializable {
 
     @NonNull
     @Id
