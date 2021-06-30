@@ -102,7 +102,7 @@ public class MailServiceImpl implements MailService{
 
         content = content.replaceAll(EXPIRATION_PLACEHOLDER, String.valueOf(expiration));
         content = content.replaceAll(HOST_PLACEHOLDER, host);
-        content = content.replaceAll(LINK_PLACEHOLDER, String.format("%s/password/reset/%s", host,
+        content = content.replaceAll(LINK_PLACEHOLDER, String.format("%s/reset/%s", host,
                 passwordResetToken.getId().toString()));
         try {
             sendMessage(passwordResetToken.getEmail(), "Password Reset", content);

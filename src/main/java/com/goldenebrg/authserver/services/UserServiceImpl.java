@@ -9,6 +9,7 @@ import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.mail.MailService;
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
+import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import com.sun.istack.NotNull;
@@ -167,5 +168,23 @@ public class UserServiceImpl implements UserService{
         User user = getUserById(UUID.fromString(id));
         user.setEnabled(status);
         userDao.save(user);
+    }
+
+    @Override
+    public PasswordResetToken getPasswordToken(UUID id) {
+        return passwordResetDao.getOne(id);
+    }
+
+    @Override
+    public User resetPassword(UUID id, PasswordResetForm form) {
+        PasswordResetToken token = getPasswordToken(id);
+        @lombok.NonNull String email = token.getEmail();
+        return Optional.ofNullable(userDao.findUserByEmail(email))
+                .map(user -> {
+                    user.setPassword(passwordEncoder.encode(form.getPasswordConfirm()));
+                    userDao.save(user);
+                    passwordResetDao.delete(token);
+                    return user;
+                }).orElse(null);
     }
 }

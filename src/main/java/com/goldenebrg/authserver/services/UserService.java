@@ -1,8 +1,10 @@
 package com.goldenebrg.authserver.services;
 
 import com.goldenebrg.authserver.jpa.entities.InvitationToken;
+import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
+import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import org.springframework.lang.NonNull;
@@ -62,4 +64,8 @@ public interface UserService {
     void changeRole(ChangeRoleDto dto);
 
     void toggleEnabledStatus(String id, boolean status);
+
+    PasswordResetToken getPasswordToken(UUID id);
+
+    User resetPassword(UUID id, PasswordResetForm form);
 }

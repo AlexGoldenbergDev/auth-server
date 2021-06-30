@@ -1,5 +1,7 @@
 package com.goldenebrg.authserver.mvc;
 
+import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
+import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.rest.beans.*;
 import com.goldenebrg.authserver.security.auth.service.UserDetailsImpl;
 import com.goldenebrg.authserver.services.AssignmentsService;
@@ -67,6 +69,38 @@ public class ViewController {
         ModelAndView modelAndView = new ModelAndView("reset");
         modelAndView.addObject("resetForm", new RequestForm());
         return modelAndView;
+    }
+
+    @GetMapping("/reset/{id}")
+    public ModelAndView resetRequest(@PathVariable("id") UUID id) {
+        ModelAndView modelAndView;
+
+        PasswordResetToken token = userService.getPasswordToken(id);
+
+        if (token != null) {
+            modelAndView = new ModelAndView("resetForm");
+            modelAndView.addObject("id", id);
+            modelAndView.addObject("form", new PasswordResetForm());
+        }
+        else
+            modelAndView = new ModelAndView("index");
+
+        return modelAndView;
+    }
+
+    @PostMapping("/reset/{id}")
+    public RedirectView resetRequest(@PathVariable("id") UUID id, @ModelAttribute("form") PasswordResetForm form, HttpServletRequest request) {
+        User user = userService.resetPassword(id, form);
+        RedirectView redirectView = new RedirectView("index");
+        if (user != null) {
+            Authentication authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+            SecurityContext sc = SecurityContextHolder.getContext();
+            sc.setAuthentication(authenticationToken);
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+        }
+
+        return redirectView;
     }
 
     @PostMapping("/reset/send")
