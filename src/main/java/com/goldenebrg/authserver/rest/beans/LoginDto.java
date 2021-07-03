@@ -1,5 +1,6 @@
 package com.goldenebrg.authserver.rest.beans;
 
+
 import lombok.Data;
 
 @Data
