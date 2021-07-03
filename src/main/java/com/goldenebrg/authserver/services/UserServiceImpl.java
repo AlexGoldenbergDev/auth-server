@@ -18,12 +18,15 @@ import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.PostConstruct;
+import javax.validation.Valid;
 import java.util.*;
 import java.util.function.Supplier;
 
 @Service
+@Validated
 public class UserServiceImpl implements UserService{
 
     private final ServerConfigurationService configurationService;
@@ -61,7 +64,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void createInvitation(@NotNull RequestForm requestForm) {
+    public void createInvitation(@NotNull @Valid RequestForm requestForm) {
         UUID uuid = createUniqueUUID();
         InvitationToken invitationToken = new InvitationToken(uuid, new Date(), requestForm.getEmail());
         mailService.sendSignUpRequest(invitationDao.save(invitationToken));

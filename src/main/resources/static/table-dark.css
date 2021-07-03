@@ -1,0 +1,17 @@
+.mdl-data-table {
+    width: 80%;
+    height: 90%;
+    margin-top: 10%;
+    margin-left: 10%;
+    margin-right: 10%;
+    background-color: #3d3d4c;
+}
+
+tr:hover {
+    background-color: #616171 !important;
+    color: white;
+}
+
+tr {
+    color: white;
+}

@@ -1,0 +1,19 @@
+
+.container {
+    min-height: 100vh;
+    border: 1px gray;
+    color: white;
+}
+
+.pass-reset-link {
+    width: 50%;
+    margin-left: 50%;
+    text-decoration: none;
+    color: white
+}
+
+.login-box {
+    background-color: #5f5f6d;
+    padding: 5%;
+    box-shadow: 3px 3px 8px 3px black
+}

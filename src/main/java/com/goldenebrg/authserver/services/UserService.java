@@ -7,8 +7,10 @@ import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
 import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
+import com.sun.istack.NotNull;
 import org.springframework.lang.NonNull;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +25,7 @@ public interface UserService {
     /**
      * Creates a new Invitation {@link InvitationToken}
      */
-    void createInvitation(RequestForm email);
+    void createInvitation(@NotNull @Valid RequestForm email);
 
     void createPasswordReset(RequestForm requestForm);
 
