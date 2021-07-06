@@ -1,0 +1,8 @@
+.error-message {
+    color: red;
+    display: block;
+}
+
+.mdl-textfield__input {
+    color: white;
+}

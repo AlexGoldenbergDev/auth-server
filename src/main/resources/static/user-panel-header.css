@@ -1,0 +1,16 @@
+.user-name {
+    color: white;
+    line-height: 30px;
+}
+
+.user-link {
+    text-decoration: none;
+    padding: 0;
+    color: white;
+    display: block;
+}
+
+.user-link:hover * {
+    color: #dcdbdb;
+
+}

@@ -2,13 +2,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
->
+ lang="en">
 <head>
     <title>Welcome</title>
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/material-design-lite/1.3.0/material.min.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/material-design-icons/4.0.0/material-icons.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/5.0.1/css/bootstrap.min.css} "/>
-    <link rel="stylesheet" type="text/css" th:href="@{dark.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/general.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/dark.css}">
 
     <script th:src="@{/webjars/material-design-lite/1.3.0/material.min.js}"></script>
     <script th:src="@{/webjars/jquery/3.6.0/jquery.min.js}"></script>
@@ -18,21 +19,27 @@
 </head>
 <body>
 
-<div class="container" sec:authorize="isAuthenticated()">
-    <link rel="stylesheet" type="text/css" th:href="@{table-dark.css}">
-    <link rel="stylesheet" type="text/css" th:href="@{default-container-dark.css}">
-    <link rel="stylesheet" type="text/css" th:href="@{index-auth-dark.css}">
+<div class="container app-container" sec:authorize="isAuthenticated()">
+    <link rel="stylesheet" type="text/css" th:href="@{/table-dark.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/default-container-dark.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/user-panel-header.css}">
 
-    <div class="row">
+    <div class="row sub-panel">
         <div class="col-10" >
             <div class="row" sec:authorize="hasRole('ADMIN')">
-                <a href="admin/invitations"><button   class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button></a>
+                <a href="/admin/invitations"><button   class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button></a>
                 <a href="/admin/assignments"><button class="mdl-button mdl-js-button mdl-button--raised">Assignments Manager</button></a>
                 <a href="/admin/users"><button class="mdl-button mdl-js-button mdl-button--raised">User Manager</button></a>
             </div>
         </div>
 
-        <div class="col-1 user-name" ><h3 sec:authentication="name"></h3></div>
+        <a th:href="@{/}" class="col-3 user-link">
+            <div class=" user-name" >
+                <i class="material-icons" style="vertical-align: middle; display: inline">account_circle</i>
+                <p style="vertical-align: middle; display: inline" sec:authentication="name"></p>
+            </div>
+        </a>
+
 
 
         <form name="logout" class="col-1" th:action="@{/appLogout}" method="POST">
@@ -43,7 +50,7 @@
         </form>
     </div>
 
-    <div class="row">
+    <div class="row sub-panel">
         <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
             <tr th:each="service : ${user.getUserServices().values()}">
                 <td class="mdl-data-table__cell--non-numeric" th:utext="${service.getName()}"></td>
@@ -53,8 +60,8 @@
     </div>
 </div>
 
-<div class="container" sec:authorize="!isAuthenticated()">
-    <link rel="stylesheet" type="text/css" th:href="@{index-no-auth-dark.css}">
+<div class="container app-container" sec:authorize="!isAuthenticated()">
+    <link rel="stylesheet" type="text/css" th:href="@{/index-no-auth-dark.css}">
 
 
     <div class="row" style="height: 30vh"></div>
@@ -80,7 +87,14 @@
 
                     <input class="mdl-button mdl-js-button mdl-button--raised" name="submit" type="submit" value="Login" />
                 </form>
-                <a class="pass-reset-link" th:href="@{/reset/send}">Forgot Password?</a>
+                <div class="row">
+                    <div class="col-9">
+                        <p th:if="${isFailedLogin}" class="error-message">Incorrect Login/Password</p>
+                    </div>
+                    <div class="col-3">
+                        <a class="pass-reset-link" th:href="@{/reset/send}">Forgot Password?</a>
+                    </div>
+                </div>
             </div>
 
         </div>

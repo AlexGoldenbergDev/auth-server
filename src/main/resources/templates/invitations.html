@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
 <head>
     <meta charset="UTF-8">
     <title>Invitations</title>
 
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/material-design-lite/1.3.0/material.min.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/material-design-icons/4.0.0/material-icons.css}"/>
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/5.0.1/css/bootstrap.min.css} "/>
-
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/5.0.1/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" type="text/css" th:href="@{/general.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/dark.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/table-dark.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/default-container-dark.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/user-panel-header.css}">
 
     <script th:src="@{/webjars/material-design-lite/1.3.0/material.min.js}"></script>
     <script th:src="@{/webjars/jquery/3.6.0/jquery.min.js}"></script>
@@ -16,38 +22,80 @@
 </head>
 <body>
 
-<form name='f' th:action="@{/admin/invitations}" th:object="${requestForm}" method='POST'>
-    <input type="hidden"
-           th:name="${_csrf.parameterName}"
-           th:value="${_csrf.token}" />
-    <input type="text" th:field="*{email}">
+<div class="container app-container" sec:authorize="isAuthenticated()">
+    <div class="row sub-panel">
+        <div class="col-10" >
+            <div class="row" sec:authorize="hasRole('ADMIN')">
+                <a href="/admin/invitations"><button   class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button></a>
+                <a href="/admin/assignments"><button class="mdl-button mdl-js-button mdl-button--raised">Assignments Manager</button></a>
+                <a href="/admin/users"><button class="mdl-button mdl-js-button mdl-button--raised">User Manager</button></a>
+            </div>
+        </div>
 
-    <button type="submit">Create New</button>
+        <a th:href="@{/}" class="col-3 user-link">
+            <div class=" user-name" >
+                <i class="material-icons" style="vertical-align: middle; display: inline">account_circle</i>
+                <p style="vertical-align: middle; display: inline" sec:authentication="name"></p>
+            </div>
+        </a>
 
-</form>
-<table>
-   <tr>
-       <th>ID</th>
-       <th>Email</th>
-       <th>Creation Date</th>
-       <th>Controls</th>
-   </tr>
-    <tr th:each="invitation: ${invitations}">
-        <td th:utext="${invitation.getId()}"></td>
-        <td th:utext="${invitation.getEmail()}"></td>
-        <td th:utext="${invitation.getCreationDate()}"></td>
-        <td>
-            <form action="#" th:action="@{'/admin/invitations/{id}'(id=${invitation.getId()})}" th:method="DELETE" >
-                <input type="hidden"
-                       th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"
-                />
 
-                <button type="submit">Delete</button>
-            </form>
-        </td>
-    </tr>
-</table>
+
+        <form name="logout" class="col-1" th:action="@{/appLogout}" method="POST">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button class="mdl-button mdl-js-button mdl-button--ico" onclick="document.logout.submit()">
+                <i class="material-icons">logout</i>
+            </button>
+        </form>
+    </div>
+    <form class="row sub-panel" name='invite' th:action="@{/admin/invitations}" th:object="${requestForm}" method='POST'>
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}" />
+
+        <div class="col">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input th:field="*{email}" class="mdl-textfield__input" type='text' id="email" name='email' value=''>
+                <label class="mdl-textfield__label" for="email">Email</label>
+            </div>
+
+            <button class="mdl-button mdl-js-button mdl-button--ico" style="display: inline" onclick="document.invite.submit()">
+                <i class="material-icons">add</i>
+            </button>
+        </div>
+        <p class="row" th:each="err : ${#fields.errors('email')}" th:text="${err}"></p>
+
+    </form>
+    <div th:if="${!invitations.isEmpty()}" class="row sub-panel">
+        <table  class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <tr>
+                <th class="mdl-data-table__cell--non-numeric">ID</th>
+                <th class="mdl-data-table__cell--non-numeric">Email</th>
+                <th class="mdl-data-table__cell--non-numeric">Creation Date</th>
+                <th class="mdl-data-table__cell--non-numeric">Controls</th>
+            </tr>
+            <tr th:each="invitation: ${invitations}">
+                <td class="mdl-data-table__cell--non-numeric" th:utext="${invitation.getId()}"></td>
+                <td class="mdl-data-table__cell--non-numeric" th:utext="${invitation.getEmail()}"></td>
+                <td class="mdl-data-table__cell--non-numeric" th:utext="${invitation.getCreationDate()}"></td>
+                <td class="mdl-data-table__cell--non-numeric">
+                    <form name="delete" action="#" th:action="@{'/admin/invitations/{id}'(id=${invitation.getId()})}" th:method="DELETE" >
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"
+                        />
+
+                        <button class="mdl-button mdl-js-button mdl-button--ico" onclick="document.delete.submit()">
+                            <i class="material-icons">delete</i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
 
 </body>
 </html>

@@ -1,7 +1,6 @@
 .mdl-data-table {
     width: 80%;
     height: 90%;
-    margin-top: 10%;
     margin-left: 10%;
     margin-right: 10%;
     background-color: #3d3d4c;
@@ -12,6 +11,6 @@ tr:hover {
     color: white;
 }
 
-tr {
+tr, .mdl-data-table th {
     color: white;
 }

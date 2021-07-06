@@ -1,5 +1,12 @@
-.container {
+.app-container {
     background-color: #5f5f6d;
     box-shadow: 3px 3px 8px 3px black;
     padding: 1.5% 5%;
+}
+
+.sub-panel {
+    box-shadow: 1px 1px 6px 1px #000000;
+    padding: 1% 2%;
+    margin-bottom: 1%;
+
 }
