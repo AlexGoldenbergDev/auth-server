@@ -14,8 +14,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.ForwardAuthenticationFailureHandler;
 
 import javax.sql.DataSource;
 
@@ -69,12 +67,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()
                 .formLogin()
                 .loginPage("/")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/login/failed")
                 .loginProcessingUrl("/perform_login")
                 .usernameParameter("login")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/index.html?error=true")
-                .failureHandler(authenticationFailureHandler())
+
         .and()
                 .logout().
                 logoutUrl("/appLogout").
@@ -84,9 +82,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
 
-    private AuthenticationFailureHandler authenticationFailureHandler() {
-        return new ForwardAuthenticationFailureHandler("/user");
-    }
+
 
     @Bean
     @Override

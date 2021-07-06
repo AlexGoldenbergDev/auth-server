@@ -15,13 +15,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.Errors;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,16 +41,13 @@ public class ViewController {
         this.assignmentsService = assignmentsService;
     }
 
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
 
     @GetMapping({ "/index", "/" })
     public ModelAndView index() {
         ModelAndView modelAndView = new ModelAndView("index");
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
 
         if (!"anonymousUser".equals(authentication.getPrincipal())) {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
@@ -60,6 +59,13 @@ public class ViewController {
 
 
 
+        return modelAndView;
+    }
+
+    @GetMapping("/login/failed")
+    public ModelAndView failedLogin() {
+        ModelAndView modelAndView = index();
+        modelAndView.addObject("isFailedLogin", true);
         return modelAndView;
     }
 
@@ -134,7 +140,7 @@ public class ViewController {
     public ModelAndView registerUserAccount
             (@ModelAttribute("user")  UserDto userDto,
              @ModelAttribute("uuid")  String uuid,
-             HttpServletRequest request, Errors errors) {
+             HttpServletRequest request) {
 
         ModelAndView modelAndView = new ModelAndView("index");
         try {
@@ -200,9 +206,21 @@ public class ViewController {
     }
 
     @PostMapping("/admin/invitations")
-    public RedirectView addInvitation(@ModelAttribute("requestForm") RequestForm requestForm) {
-        userService.createInvitation(requestForm);
-        return new RedirectView("/admin/invitations");
+    public ModelAndView addInvitation(@ModelAttribute("requestForm") @Valid RequestForm requestForm, BindingResult result, Model model) {
+
+            ModelAndView modelAndView;
+            if (result.hasErrors()) {
+                modelAndView = new ModelAndView("invitations");
+                modelAndView.addObject("invitations",userService.getInvitations());
+                modelAndView.addObject("requestForm", model.getAttribute("requestForm"));
+            }
+            else {
+                userService.createInvitation(requestForm);
+                modelAndView = invitations();
+            }
+
+            return modelAndView;
+
     }
 
     @DeleteMapping( "/admin/invitations/{id}" )
