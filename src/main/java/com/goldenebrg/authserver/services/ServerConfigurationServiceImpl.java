@@ -11,10 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -26,7 +23,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     private String host;
 
-    ServerConfig serverConfig;
+    AppConfig appConfig;
 
     @PostConstruct
     void initialize() throws IllegalAccessException {
@@ -34,7 +31,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
         this.host = InetAddress.getLoopbackAddress().getHostName();
 
         try (InputStream stream = AssignmentsServiceImpl.class.getResourceAsStream(PATH)){
-            serverConfig = new ObjectMapper().readValue(stream, ServerConfig.class);
+            appConfig = new ObjectMapper().readValue(stream, AppConfig.class);
 
         } catch (IOException e) {
             log.error("Exception occurred during loading server config.", e);
@@ -50,8 +47,8 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
 
     private void userTokensExpirationValidation() {
-        userTokenExpirationValidation(serverConfig::getPasswordResetTokenExpirationHours, "passwordResetTokenExpirationHours");
-        userTokenExpirationValidation(serverConfig::getSignUpTokenExpirationHours, "signUpTokenExpirationHours");
+        userTokenExpirationValidation(appConfig::getPasswordResetTokenExpirationHours, "passwordResetTokenExpirationHours");
+        userTokenExpirationValidation(appConfig::getSignUpTokenExpirationHours, "signUpTokenExpirationHours");
     }
 
 
@@ -63,44 +60,44 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     @Override
     public Map<String, AssignmentJson> getAssignments() {
-        return serverConfig.getAssignments().getAssignments();
+        return appConfig.getAssignments().getAssignments();
     }
 
     @Override
     @NotNull
     @NotEmpty
     public List<String> getRoles() {
-        return serverConfig.getRoles();
+        return appConfig.getRoles();
     }
 
     @Override
     @NotNull
     @NotEmpty
     public String getDefaultRole() {
-        return serverConfig.getRoles().get(serverConfig.getDefaultRoleIndex());
+        return appConfig.getRoles().get(appConfig.getDefaultRoleIndex());
     }
 
     @Override
     public int getSignUpTokenExpirationHours() {
-        return serverConfig.getSignUpTokenExpirationHours();
+        return appConfig.getSignUpTokenExpirationHours();
     }
 
     @Override
     public int getPasswordResetTokenExpirationHours() {
-        return serverConfig.getPasswordResetTokenExpirationHours();
+        return appConfig.getPasswordResetTokenExpirationHours();
     }
 
     @Override
     @NotNull
     @NotEmpty
     public String getHost() {
-        return Optional.ofNullable(serverConfig.getAddress()).orElse(host);
+        return Optional.ofNullable(appConfig.getServer()).map(ServerConfiguration::getAddress).orElse(host);
     }
 
     @Override
     @NotNull
     public List<ConstrainPattern> getPasswordPatterns() {
-        return Optional.ofNullable(serverConfig.getSecurity())
+        return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getPassword)
                 .map(PasswordConfiguration::getPatterns)
                 .orElse(Collections.emptyList());
@@ -109,7 +106,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     @Override
     @NotNull
     public List<ConstrainPattern> getLoginPatterns() {
-        return Optional.ofNullable(serverConfig.getSecurity())
+        return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
                 .map(LoginConfiguration::getPatterns)
                 .orElse(Collections.emptyList());
@@ -117,7 +114,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     @Override
     public int getPasswordMinSize() {
-        return Optional.ofNullable(serverConfig.getSecurity())
+        return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getPassword)
                 .map(PasswordConfiguration::getMinSize)
                 .filter(size -> size != 0).orElse(6);
@@ -125,7 +122,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     @Override
     public int getPasswordMaxSize() {
-        return Optional.ofNullable(serverConfig.getSecurity())
+        return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getPassword)
                 .map(PasswordConfiguration::getMinSize)
                 .filter(size -> size != 0).orElse(32);
@@ -133,7 +130,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     @Override
     public int getLoginMinSize() {
-        return Optional.ofNullable(serverConfig.getSecurity())
+        return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
                 .map(LoginConfiguration::getMinSize)
                 .filter(size -> size != 0).orElse(3);
@@ -141,10 +138,34 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     @Override
     public int getLoginMaxSize() {
-        return Optional.ofNullable(serverConfig.getSecurity())
+        return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
                 .map(LoginConfiguration::getMinSize)
                 .filter(size -> size != 0).orElse(24);
+    }
+
+    @Override
+    public List<String> getCorsOrigins() {
+        return Optional.ofNullable(appConfig.getServer())
+                .map(ServerConfiguration::getCors)
+                .map(CorsConfiguration::getOrigins)
+                .orElse(Collections.singletonList("localhost"));
+    }
+
+    @Override
+    public List<String> getCorsMethods() {
+        return Optional.ofNullable(appConfig.getServer())
+                .map(ServerConfiguration::getCors)
+                .map(CorsConfiguration::getMethods)
+                .orElse(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
+    }
+
+    @Override
+    public List<String> getCorsHeaders() {
+        return Optional.ofNullable(appConfig.getServer())
+                .map(ServerConfiguration::getCors)
+                .map(CorsConfiguration::getHeaders)
+                .orElse(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
     }
 
 

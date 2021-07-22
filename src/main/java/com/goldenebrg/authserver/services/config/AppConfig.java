@@ -5,9 +5,9 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ServerConfig {
+public class AppConfig {
 
-    String address;
+    ServerConfiguration server;
     int signUpTokenExpirationHours;
     int passwordResetTokenExpirationHours;
     AssignmentsConfiguration assignments;

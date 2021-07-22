@@ -1,9 +1,29 @@
 {
-  "address": "http://localhost:8080",
   "roles": [
     "USER",
     "ADMIN"
   ],
+  "server": {
+    "address": "http://localhost:8080",
+    "cors": {
+      "methods": [
+        "HEAD",
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH"
+      ],
+      "headers": [
+        "Authorization",
+        "Cache-Control",
+        "Content-Type"
+      ],
+      "origins": [
+        "*"
+      ]
+    }
+  },
   "defaultRoleIndex": 0,
   "passwordResetTokenExpirationHours": 2,
   "signUpTokenExpirationHours": 2,
