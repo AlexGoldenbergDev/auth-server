@@ -115,6 +115,9 @@ public class UserServiceImpl implements UserService{
         loginPatterns.stream().filter(ptn -> !Pattern.compile(ptn.getPattern()).matcher(login).find())
                 .map(ConstrainPattern::getMessage).forEach(messages::add);
 
+        boolean isUserExists = Optional.ofNullable(userDao.findUserByUsername(login)).isPresent();
+        if (isUserExists) messages.add("User with this login already exists. Please, check for another option");
+
         return messages;
     }
 
