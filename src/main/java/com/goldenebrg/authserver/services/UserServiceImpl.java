@@ -231,6 +231,12 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public boolean isEmailSignedUp(RequestForm requestForm) {
+        String email = requestForm.getEmail();
+        return Optional.ofNullable(userDao.findUserByEmail(email)).isPresent();
+    }
+
+    @Override
     public void changeRole(ChangeRoleDto dto) {
         String id = dto.getId();
         User user = getUserById(UUID.fromString(id));

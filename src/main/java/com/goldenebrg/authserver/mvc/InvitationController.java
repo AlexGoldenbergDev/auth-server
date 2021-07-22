@@ -42,8 +42,16 @@ public class InvitationController {
             modelAndView.addObject("invitations", userService.getSortedInvitations());
             modelAndView.addObject("requestForm", model.getAttribute("requestForm"));
         } else {
-            userService.createInvitation(requestForm);
+
+            boolean emailSignedUp = userService.isEmailSignedUp(requestForm);
             modelAndView = invitations();
+
+            if (emailSignedUp) {
+                modelAndView.addObject("emailError",
+                        String.format("User for email '%s' already exists", requestForm.getEmail()));
+            } else
+                userService.createInvitation(requestForm);
+
         }
 
         return modelAndView;

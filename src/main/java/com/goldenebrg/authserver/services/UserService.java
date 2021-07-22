@@ -72,6 +72,8 @@ public interface UserService {
 
     User getUserById(UUID id);
 
+    boolean isEmailSignedUp(RequestForm requestForm);
+
     void changeRole(ChangeRoleDto dto);
 
     void toggleEnabledStatus(String id, boolean status);

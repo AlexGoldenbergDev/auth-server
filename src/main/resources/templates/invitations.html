@@ -63,7 +63,8 @@
                 <i class="material-icons">add</i>
             </button>
         </div>
-        <p class="row" th:each="err : ${#fields.errors('email')}" th:text="${err}"></p>
+        <p class="row error-message" th:each="err : ${#fields.errors('email')}" th:text="${err}"></p>
+        <p class="row error-message" th:if="${emailError} != null" th:text="${emailError}"></p>
 
     </form>
     <div th:if="${!invitations.isEmpty()}" class="row sub-panel">
