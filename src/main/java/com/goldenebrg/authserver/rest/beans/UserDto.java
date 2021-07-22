@@ -1,15 +1,13 @@
 package com.goldenebrg.authserver.rest.beans;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class UserDto extends LoginDto implements PasswordInputForm {
+public class UserDto implements PasswordInputForm {
 
     private UUID uuid;
 
