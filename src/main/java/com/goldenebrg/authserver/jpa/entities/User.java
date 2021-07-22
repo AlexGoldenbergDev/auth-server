@@ -5,7 +5,10 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 
 @Entity
 @EqualsAndHashCode(exclude = "userServices")
@@ -50,9 +53,5 @@ public class User implements Serializable {
 
     public User(UUID id, String username, String email, String role, String password) {
         this(id, email, username, password, role, true);
-    }
-
-    public Collection<UserAssignments> getUserAssignments() {
-        return userServices.values();
     }
 }

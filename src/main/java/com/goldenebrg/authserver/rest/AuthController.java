@@ -4,6 +4,7 @@ import com.goldenebrg.authserver.index.ServiceName;
 import com.goldenebrg.authserver.rest.beans.AuthRequest;
 import com.goldenebrg.authserver.rest.beans.AuthValidationRequest;
 import com.goldenebrg.authserver.rest.beans.AuthValidationResponse;
+import com.goldenebrg.authserver.security.auth.service.AppUserDetails;
 import com.goldenebrg.authserver.security.auth.service.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +69,7 @@ public class AuthController {
 
 
         return responseEntity.orElseGet(() -> {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            AppUserDetails userDetails = (AppUserDetails) userDetailsService.loadUserByUsername(username);
             String token = jwtService.generateToken(userDetails);
             return AuthResponseEntityTool.authTokenResponse(authRequest, token);
         });
