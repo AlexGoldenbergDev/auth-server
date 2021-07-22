@@ -1,23 +1,28 @@
 package com.goldenebrg.authserver.rest.beans;
 
-import com.goldenebrg.authserver.form.validator.ValidLogin;
-import com.goldenebrg.authserver.form.validator.ValidPassword;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
-public class UserDto extends LoginDto{
+@EqualsAndHashCode(callSuper = true)
+public class UserDto extends LoginDto implements PasswordInputForm {
 
     private UUID uuid;
 
-    @ValidLogin
+    @NotNull
+    @NotEmpty
     private String login;
 
-    @ValidPassword
+    @NotNull
+    @NotEmpty
     private String password;
 
-    @ValidPassword
+    @NotNull
+    @NotEmpty
     private String matchingPassword;
 
 

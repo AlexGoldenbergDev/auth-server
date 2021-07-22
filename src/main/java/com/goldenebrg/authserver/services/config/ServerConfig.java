@@ -11,6 +11,7 @@ public class ServerConfig {
     int signUpTokenExpirationHours;
     int passwordResetTokenExpirationHours;
     AssignmentsConfiguration assignments;
+    SecurityConfiguration security;
     List<String> roles;
     int defaultRoleIndex;
 

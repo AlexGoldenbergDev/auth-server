@@ -8,14 +8,9 @@
 .pass-reset-link {
     width: 50%;
     margin-left: 50%;
-    text-decoration: none;
-    color: white;
     display: block;
 }
 
-.pass-reset-link:hover {
-    color: #dcdbdb;
-}
 
 .login-box {
     background-color: #5f5f6d;

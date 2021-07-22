@@ -10,6 +10,7 @@ import com.goldenebrg.authserver.services.config.AssignmentField;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -24,7 +25,9 @@ import org.springframework.web.servlet.view.RedirectView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -33,12 +36,14 @@ public class ViewController {
 
     private final UserService userService;
     private final AssignmentsService assignmentsService;
+    private final AuthenticationManager authenticationManager;
 
 
     @Autowired
-    ViewController(UserService userService, AssignmentsService assignmentsService) {
+    ViewController(UserService userService, AssignmentsService assignmentsService, AuthenticationManager authenticationManager) {
         this.userService = userService;
         this.assignmentsService = assignmentsService;
+        this.authenticationManager = authenticationManager;
     }
 
 
@@ -48,13 +53,15 @@ public class ViewController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        Object userPrincipal = Optional.ofNullable(authentication)
+                .map(Authentication::getPrincipal)
+                .orElse("anonymousUser");
 
-        if (!"anonymousUser".equals(authentication.getPrincipal())) {
+        if (!"anonymousUser".equals(userPrincipal)) {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             @NonNull UUID id = principal.getUser().getId();
             modelAndView.addObject("user", userService.getUserById(id));
-        }
-        else
+        } else
             modelAndView.addObject("login", new LoginDto());
 
 
@@ -95,22 +102,27 @@ public class ViewController {
     }
 
     @PostMapping("/reset/{id}")
-    public RedirectView resetRequest(@PathVariable("id") UUID id, @ModelAttribute("form") PasswordResetForm form, HttpServletRequest request) {
-        User user = userService.resetPassword(id, form);
-        RedirectView redirectView = new RedirectView("index");
-        if (user != null) {
-            Authentication authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
-            SecurityContext sc = SecurityContextHolder.getContext();
-            sc.setAuthentication(authenticationToken);
-            HttpSession session = request.getSession(true);
-            session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
-        }
+    public ModelAndView resetRequest(@PathVariable("id") UUID id,
+                                     @ModelAttribute("form")
+                                     @Valid PasswordResetForm form, BindingResult result, HttpServletRequest request) {
 
-        return redirectView;
+        ModelAndView modelAndView;
+        List<String> messages = userService.getPasswordValidationErrors(form);
+        if (!messages.isEmpty() || result.hasErrors()) {
+            modelAndView = new ModelAndView("resetForm");
+            modelAndView.addObject("passwordError", messages);
+            return modelAndView;
+        } else {
+            Optional.ofNullable(userService.resetPassword(id, form))
+                    .ifPresent(user -> doAutoLogin(user.getUsername(), form.getPassword(), request));
+            modelAndView = index();
+        }
+        return modelAndView;
     }
 
+
     @PostMapping("/reset/send")
-    public ModelAndView resetRequest(@ModelAttribute("resetForm") RequestForm resetForm) {
+    public ModelAndView resetRequest(@ModelAttribute("resetForm") @Valid RequestForm resetForm, BindingResult bindingResult) {
         userService.createPasswordReset(resetForm);
         return index();
     }
@@ -138,21 +150,42 @@ public class ViewController {
 
     @PostMapping("/signup")
     public ModelAndView registerUserAccount
-            (@ModelAttribute("user")  UserDto userDto,
-             @ModelAttribute("uuid")  String uuid,
-             HttpServletRequest request) {
+            (@ModelAttribute("user") @Valid UserDto userDto,
+             BindingResult bindingResult,
+             @ModelAttribute("uuid") String uuid,
+             HttpServletRequest request, Model model) {
 
-        ModelAndView modelAndView = new ModelAndView("index");
+        ModelAndView modelAndView;
+
         try {
             UUID requestIid = UUID.fromString(uuid);
-            userDto.setUuid(UUID.randomUUID());
-            Authentication authenticationToken = new UsernamePasswordAuthenticationToken(userDto.getLogin(), userDto.getPassword());
-            modelAndView.addObject("user", userService.registerNewUserAccount(userDto, requestIid));
-            SecurityContext sc = SecurityContextHolder.getContext();
-            sc.setAuthentication(authenticationToken);
-            HttpSession session = request.getSession(true);
-            session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+            List<String> passwordErrors = userService.getPasswordValidationErrors(userDto);
+            List<String> loginErrors = userService.getLoginValidationErrors(userDto);
+
+
+            if (!passwordErrors.isEmpty() || !loginErrors.isEmpty() || bindingResult.hasErrors()) {
+                modelAndView = new ModelAndView("signup");
+                modelAndView.addObject("passwordError", passwordErrors);
+                modelAndView.addObject("loginError", loginErrors);
+                modelAndView.addObject("user", userDto);
+                modelAndView.addObject("uuid", requestIid);
+            } else {
+                modelAndView = new ModelAndView("index");
+                userDto.setUuid(UUID.randomUUID());
+                User user = userService.registerNewUserAccount(userDto, requestIid);
+                modelAndView.addObject("user", userService.registerNewUserAccount(userDto, requestIid));
+                Authentication authenticationToken = new UsernamePasswordAuthenticationToken(new UserDetailsImpl(user), userDto.getPassword());
+                Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+                SecurityContext sc = SecurityContextHolder.getContext();
+                sc.setAuthentication(authenticate);
+                HttpSession session = request.getSession(true);
+                session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+
+            }
+
+
         } catch (Exception uaeEx) {
+            modelAndView = new ModelAndView("index");
             modelAndView.addObject("login", new LoginDto());
 
         }
@@ -160,10 +193,11 @@ public class ViewController {
         return modelAndView;
     }
 
+
     @GetMapping("/admin/users")
     public ModelAndView users() {
         ModelAndView modelAndView = new ModelAndView("users");
-        modelAndView.addObject("users", userService.getUsers());
+        modelAndView.addObject("users", userService.getSortedUsers());
         return modelAndView;
     }
 
@@ -200,7 +234,7 @@ public class ViewController {
     @GetMapping("/admin/invitations")
     public ModelAndView invitations() {
         ModelAndView modelAndView = new ModelAndView("invitations");
-        modelAndView.addObject("invitations", userService.getInvitations());
+        modelAndView.addObject("invitations", userService.getSortedInvitations());
         modelAndView.addObject("requestForm", new RequestForm());
         return modelAndView;
     }
@@ -211,7 +245,7 @@ public class ViewController {
             ModelAndView modelAndView;
             if (result.hasErrors()) {
                 modelAndView = new ModelAndView("invitations");
-                modelAndView.addObject("invitations",userService.getInvitations());
+                modelAndView.addObject("invitations", userService.getSortedInvitations());
                 modelAndView.addObject("requestForm", model.getAttribute("requestForm"));
             }
             else {
@@ -227,7 +261,7 @@ public class ViewController {
     public RedirectView deleteInvitation(@PathVariable UUID id) {
         userService.deleteRequestById(id);
         ModelAndView modelAndView = new ModelAndView("invitations");
-        modelAndView.addObject("invitations", userService.getInvitations());
+        modelAndView.addObject("invitations", userService.getSortedInvitations());
         return new RedirectView("/admin/invitations");
     }
 
@@ -281,6 +315,21 @@ public class ViewController {
 
     private static ModelAndView getRejectUnknownPage() {
         return getRejectPage("Unknown Page");
+    }
+
+
+    private void doAutoLogin(String username, String password, HttpServletRequest request) {
+
+        try {
+            UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(username, password);
+            Authentication auth = authenticationManager.authenticate(authReq);
+            SecurityContext sc = SecurityContextHolder.getContext();
+            sc.setAuthentication(auth);
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+        } catch (Exception e) {
+            SecurityContextHolder.getContext().setAuthentication(null);
+        }
     }
 
 

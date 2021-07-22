@@ -1,5 +1,55 @@
 {
-  "roles": ["USER", "ADMIN"],
+  "address": "http://localhost:8080",
+  "roles": [
+    "USER",
+    "ADMIN"
+  ],
   "defaultRoleIndex": 0,
-  "assignments": {}
+  "passwordResetTokenExpirationHours": 2,
+  "signUpTokenExpirationHours": 2,
+  "security": {
+    "login": {
+      "patterns": [
+        {
+          "pattern": "[a-zA-Z]+",
+          "message": "Login must contain any letters"
+        }
+      ]
+    },
+    "password": {
+      "patterns": [
+        {
+          "pattern": "[0-9]+",
+          "message": "Password must contain numbers"
+        },
+        {
+          "pattern": "[A-Z]+",
+          "message": "Password must contain capital letters"
+        },
+        {
+          "pattern": "[a-z]+",
+          "message": "Password must contain lower-case letters"
+        },
+        {
+          "pattern": "(?:\\!|\\@|\\#|\\$|\\%|\\&|\\*|\\(|\\)|\\'|\\+|\\,|\\-|\\.|\\/|\\:|\\;|\\<|\\=|\\>|\\?|\\[|\\]|\\^|\\_|\\`|\\{|\\||\\})+",
+          "message": "Password must contain special characters"
+        }
+      ]
+    }
+  },
+  "assignments": {
+    "storage": {
+      "isEnabled": true,
+      "fields": [
+        {
+          "name": "permission",
+          "default": "USER",
+          "options": [
+            "USER",
+            "ADMIN"
+          ]
+        }
+      ]
+    }
+  }
 }

@@ -8,11 +8,10 @@ import com.goldenebrg.authserver.jpa.entities.InvitationToken;
 import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.mail.MailService;
-import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
-import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
-import com.goldenebrg.authserver.rest.beans.RequestForm;
-import com.goldenebrg.authserver.rest.beans.UserDto;
+import com.goldenebrg.authserver.rest.beans.*;
+import com.goldenebrg.authserver.services.config.ConstrainPattern;
 import com.sun.istack.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,10 +19,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService{
 
     private final ServerConfigurationService configurationService;
@@ -32,7 +34,17 @@ public class UserServiceImpl implements UserService{
     private final PasswordResetDao passwordResetDao;
     private final UserDao userDao;
     private final MailService mailService;
+
     private List<String> userRoles;
+
+    private List<ConstrainPattern> passwordPatterns;
+    private List<ConstrainPattern> loginPatterns;
+
+    private int passwordMinSize;
+    private int passwordMaxSize;
+
+    private int loginMinSize;
+    private int loginMaxSize;
 
 
     @Autowired
@@ -53,11 +65,57 @@ public class UserServiceImpl implements UserService{
     @PostConstruct
     void initialize() {
         this.userRoles = configurationService.getRoles();
+
+        this.passwordPatterns = configurationService.getPasswordPatterns();
+        this.loginPatterns = configurationService.getLoginPatterns();
+
+        this.passwordMinSize = configurationService.getPasswordMinSize();
+        this.passwordMaxSize = configurationService.getPasswordMaxSize();
+
+        this.loginMinSize = configurationService.getLoginMinSize();
+        this.loginMaxSize = configurationService.getLoginMaxSize();
+
     }
 
     @Override
     public List<String> getAvailableRoles() {
         return userRoles;
+    }
+
+    @Override
+    public List<String> getPasswordValidationErrors(@NotNull PasswordInputForm passwordInputForm) {
+        String password = passwordInputForm.getPassword();
+        String matchingPassword = passwordInputForm.getMatchingPassword();
+
+        List<String> messages = new LinkedList<>();
+
+        if (!password.equals(matchingPassword))
+            messages.add("Passwords doesn't match each other");
+
+        if (password.length() > passwordMaxSize || password.length() < passwordMinSize)
+            messages.add(String.format("Passwords size must be between %d and %d characters", passwordMinSize, passwordMaxSize));
+
+        passwordPatterns.stream().filter(ptn -> !Pattern.compile(ptn.getPattern()).matcher(password).find())
+                .map(ConstrainPattern::getMessage)
+                .forEach(messages::add);
+
+        return messages;
+
+    }
+
+    @Override
+    public List<String> getLoginValidationErrors(@NotNull UserDto userDto) {
+        String login = userDto.getLogin();
+
+        List<String> messages = new LinkedList<>();
+
+        if (login.length() > loginMaxSize || login.length() < loginMinSize)
+            messages.add(String.format("Login size must be between %d and %d characters", loginMinSize, loginMaxSize));
+
+        loginPatterns.stream().filter(ptn -> !Pattern.compile(ptn.getPattern()).matcher(login).find())
+                .map(ConstrainPattern::getMessage).forEach(messages::add);
+
+        return messages;
     }
 
     @Override
@@ -104,7 +162,13 @@ public class UserServiceImpl implements UserService{
         return invitationDao.findAll();
     }
 
+    @Override
+    public Collection<InvitationToken> getSortedInvitations() {
+        Collection<InvitationToken> tokens = new TreeSet<>(Comparator.comparing(InvitationToken::getCreationDate));
+        tokens.addAll(getInvitations());
+        return tokens;
 
+    }
 
     @Scheduled(cron = "0 0 0 * *")
     public void deleteOldRequests() {
@@ -130,19 +194,30 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User registerNewUserAccount(@NonNull UserDto userDto, UUID requestIid) {
-        InvitationToken invitationToken = invitationDao.getOne(requestIid);
-        String role = configurationService.getDefaultRole();
-        User user = new User(userDto.getUuid(), userDto.getLogin(), invitationToken.getEmail(), role,
-                passwordEncoder.encode(userDto.getPassword()));
-        userDao.save(user);
-        deleteRequestById(requestIid);
-        return user;
-
+        try {
+            InvitationToken invitationToken = invitationDao.getOne(requestIid);
+            String role = configurationService.getDefaultRole();
+            User user = new User(userDto.getUuid(), userDto.getLogin(), invitationToken.getEmail(), role,
+                    passwordEncoder.encode(userDto.getPassword()));
+            userDao.save(user);
+            deleteRequestById(requestIid);
+            return user;
+        } catch (EntityNotFoundException entityNotFoundException) {
+            throw new IllegalStateException("Unable to find invitation associated with new user", entityNotFoundException);
+        }
     }
+
 
     @Override
     public List<User> getUsers() {
         return userDao.findAll();
+    }
+
+    @Override
+    public Collection<User> getSortedUsers() {
+        TreeSet<User> users = new TreeSet<>(Comparator.comparing(User::getUsername));
+        users.addAll(getUsers());
+        return users;
     }
 
     @Override
@@ -181,7 +256,7 @@ public class UserServiceImpl implements UserService{
         @lombok.NonNull String email = token.getEmail();
         return Optional.ofNullable(userDao.findUserByEmail(email))
                 .map(user -> {
-                    user.setPassword(passwordEncoder.encode(form.getPasswordConfirm()));
+                    user.setPassword(passwordEncoder.encode(form.getMatchingPassword()));
                     userDao.save(user);
                     passwordResetDao.delete(token);
                     return user;

@@ -1,15 +1,17 @@
 package com.goldenebrg.authserver.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goldenebrg.authserver.services.config.AssignmentJson;
-import com.goldenebrg.authserver.services.config.ServerConfig;
+import com.goldenebrg.authserver.services.config.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +35,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
         try (InputStream stream = AssignmentsServiceImpl.class.getResourceAsStream(PATH)){
             serverConfig = new ObjectMapper().readValue(stream, ServerConfig.class);
+
         } catch (IOException e) {
             log.error("Exception occurred during loading server config.", e);
             throw new IllegalAccessException("Configure " + PATH + " and then try to restart server");
@@ -64,11 +67,15 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @NotNull
+    @NotEmpty
     public List<String> getRoles() {
         return serverConfig.getRoles();
     }
 
     @Override
+    @NotNull
+    @NotEmpty
     public String getDefaultRole() {
         return serverConfig.getRoles().get(serverConfig.getDefaultRoleIndex());
     }
@@ -84,7 +91,61 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @NotNull
+    @NotEmpty
     public String getHost() {
         return Optional.ofNullable(serverConfig.getAddress()).orElse(host);
     }
+
+    @Override
+    @NotNull
+    public List<ConstrainPattern> getPasswordPatterns() {
+        return Optional.ofNullable(serverConfig.getSecurity())
+                .map(SecurityConfiguration::getPassword)
+                .map(PasswordConfiguration::getPatterns)
+                .orElse(Collections.emptyList());
+    }
+
+    @Override
+    @NotNull
+    public List<ConstrainPattern> getLoginPatterns() {
+        return Optional.ofNullable(serverConfig.getSecurity())
+                .map(SecurityConfiguration::getLogin)
+                .map(LoginConfiguration::getPatterns)
+                .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public int getPasswordMinSize() {
+        return Optional.ofNullable(serverConfig.getSecurity())
+                .map(SecurityConfiguration::getPassword)
+                .map(PasswordConfiguration::getMinSize)
+                .filter(size -> size != 0).orElse(6);
+    }
+
+    @Override
+    public int getPasswordMaxSize() {
+        return Optional.ofNullable(serverConfig.getSecurity())
+                .map(SecurityConfiguration::getPassword)
+                .map(PasswordConfiguration::getMinSize)
+                .filter(size -> size != 0).orElse(32);
+    }
+
+    @Override
+    public int getLoginMinSize() {
+        return Optional.ofNullable(serverConfig.getSecurity())
+                .map(SecurityConfiguration::getLogin)
+                .map(LoginConfiguration::getMinSize)
+                .filter(size -> size != 0).orElse(3);
+    }
+
+    @Override
+    public int getLoginMaxSize() {
+        return Optional.ofNullable(serverConfig.getSecurity())
+                .map(SecurityConfiguration::getLogin)
+                .map(LoginConfiguration::getMinSize)
+                .filter(size -> size != 0).orElse(24);
+    }
+
+
 }

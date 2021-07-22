@@ -6,3 +6,11 @@
 .mdl-textfield__input {
     color: white;
 }
+
+.ctr-cell {
+    display: flex;
+}
+
+.ctr-cell * {
+    margin-right: 5%;
+}

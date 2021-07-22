@@ -1,13 +1,19 @@
 package com.goldenebrg.authserver.rest.beans;
 
-import com.goldenebrg.authserver.form.validator.ValidPassword;
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 @Data
-public class PasswordResetForm {
-    @ValidPassword
+public class PasswordResetForm implements PasswordInputForm {
+
+    @NotNull
+    @NotEmpty
     String password;
 
-    @ValidPassword
-    String passwordConfirm;
+    @NotNull
+    @NotEmpty
+    String matchingPassword;
+
 }

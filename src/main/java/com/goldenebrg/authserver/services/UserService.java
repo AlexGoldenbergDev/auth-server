@@ -3,14 +3,12 @@ package com.goldenebrg.authserver.services;
 import com.goldenebrg.authserver.jpa.entities.InvitationToken;
 import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
-import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
-import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
-import com.goldenebrg.authserver.rest.beans.RequestForm;
-import com.goldenebrg.authserver.rest.beans.UserDto;
+import com.goldenebrg.authserver.rest.beans.*;
 import com.sun.istack.NotNull;
 import org.springframework.lang.NonNull;
 
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +19,10 @@ import java.util.UUID;
 public interface UserService {
 
     List<String> getAvailableRoles();
+
+    List<String> getPasswordValidationErrors(@NotNull PasswordInputForm userDto);
+
+    List<String> getLoginValidationErrors(@NotNull UserDto userDto);
 
     /**
      * Creates a new Invitation {@link InvitationToken}
@@ -38,12 +40,17 @@ public interface UserService {
 
     /**
      * Returns full {@link InvitationToken} list
+     *
      * @return List of all persisted requests
      */
     List<InvitationToken> getInvitations();
 
+    Collection<InvitationToken> getSortedInvitations();
+
+
     /**
      * Deletes specific {@link InvitationToken}
+     *
      * @param uuid - {@link InvitationToken#getId()}
      */
     void deleteRequestById(UUID uuid);
@@ -57,6 +64,8 @@ public interface UserService {
 
 
     List<User> getUsers();
+
+    Collection<User> getSortedUsers();
 
 
     void deleteUserById(UUID id);
