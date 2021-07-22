@@ -49,4 +49,5 @@ public class UserAssignments {
     public void addField(String key, Serializable serializable) {
         fields.put(key, serializable);
     }
+
 }

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -77,8 +76,8 @@ public class JwtService {
         return expiration.before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
+    public String generateToken(AppUserDetails userDetails) {
+        Map<String, Object> claims = userDetails.getClaims();
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
