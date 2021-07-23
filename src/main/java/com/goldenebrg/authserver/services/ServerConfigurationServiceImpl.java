@@ -11,7 +11,10 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -137,6 +140,21 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    public int getLoginMaxAttempts() {
+        return Optional.ofNullable(appConfig.getSecurity())
+                .map(SecurityConfiguration::getLogin)
+                .map(LoginConfiguration::getMaxAttempts).orElse(3);
+    }
+
+
+    @Override
+    public int getLoginAttemptTimeoutMinutes() {
+        return Optional.ofNullable(appConfig.getSecurity())
+                .map(SecurityConfiguration::getLogin)
+                .map(LoginConfiguration::getAttemptTimeoutMinutes).orElse(5);
+    }
+
+    @Override
     public int getLoginMaxSize() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
@@ -157,7 +175,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
         return Optional.ofNullable(appConfig.getServer())
                 .map(ServerConfiguration::getCors)
                 .map(CorsConfiguration::getMethods)
-                .orElse(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
+                .orElse(Collections.emptyList());
     }
 
     @Override
@@ -165,7 +183,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
         return Optional.ofNullable(appConfig.getServer())
                 .map(ServerConfiguration::getCors)
                 .map(CorsConfiguration::getHeaders)
-                .orElse(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+                .orElse(Collections.emptyList());
     }
 
 

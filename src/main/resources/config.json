@@ -6,19 +6,6 @@
   "server": {
     "address": "http://localhost:8080",
     "cors": {
-      "methods": [
-        "HEAD",
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH"
-      ],
-      "headers": [
-        "Authorization",
-        "Cache-Control",
-        "Content-Type"
-      ],
       "origins": [
         "*"
       ]
@@ -29,6 +16,8 @@
   "signUpTokenExpirationHours": 2,
   "security": {
     "login": {
+      "maxAttempts": 3,
+      "attemptTimeoutMinutes": 3,
       "patterns": [
         {
           "pattern": "[a-zA-Z]+",

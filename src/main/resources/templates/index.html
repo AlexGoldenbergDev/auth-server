@@ -89,7 +89,7 @@
                 </form>
                 <div class="row">
                     <div class="col-9">
-                        <p th:if="${isFailedLogin}" class="error-message">Incorrect Login/Password</p>
+                        <p class="error-message" th:if="${message} != null" th:text="${message}"></p>
                     </div>
                     <div class="col-3">
                         <a class="pass-reset-link" th:href="@{/reset/send}">Forgot Password?</a>

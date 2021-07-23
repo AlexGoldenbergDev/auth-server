@@ -32,6 +32,10 @@ public interface ServerConfigurationService {
 
     int getLoginMinSize();
 
+    int getLoginMaxAttempts();
+
+    int getLoginAttemptTimeoutMinutes();
+
     int getLoginMaxSize();
 
     List<String> getCorsOrigins();

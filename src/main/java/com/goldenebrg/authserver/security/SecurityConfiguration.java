@@ -15,11 +15,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 
 @Configuration
@@ -74,15 +76,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/**").permitAll()
-        .and()
+                .and()
                 .formLogin()
                 .loginPage("/")
                 .defaultSuccessUrl("/", true)
-                .failureUrl("/login/failed")
                 .loginProcessingUrl("/perform_login")
                 .usernameParameter("login")
                 .passwordParameter("password")
-
+                .failureHandler(authenticationFailureHandler())
                 .and()
                 .logout().
                 logoutUrl("/appLogout").
@@ -90,14 +91,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         ;
     }
 
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return new AuthFailedHandler();
+    }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(serverConfigurationService.getCorsOrigins());
-        configuration.setAllowedMethods(serverConfigurationService.getCorsMethods());
+
+        List<String> corsMethods = serverConfigurationService.getCorsMethods();
+        if (!corsMethods.isEmpty())
+            configuration.setAllowedMethods(corsMethods);
+
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(serverConfigurationService.getCorsHeaders());
+
+        List<String> corsHeaders = serverConfigurationService.getCorsHeaders();
+        if (!corsHeaders.isEmpty())
+            configuration.setAllowedHeaders(corsHeaders);
+
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
