@@ -2,17 +2,18 @@ package com.goldenebrg.authserver.services.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.Set;
 
 @Data
-public class AssignmentField implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class AssignmentSelectionListField extends AbstractAssignmentField {
 
-    String name;
 
     @JsonProperty("default")
     String def;
+
 
     Set<String> options;
 

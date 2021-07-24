@@ -5,21 +5,22 @@ import com.goldenebrg.authserver.jpa.dao.UserDao;
 import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.jpa.entities.UserAssignments;
 import com.goldenebrg.authserver.rest.beans.AssignmentForm;
-import com.goldenebrg.authserver.services.config.AssignmentField;
+import com.goldenebrg.authserver.services.config.AssignmentInputField;
 import com.goldenebrg.authserver.services.config.AssignmentJson;
+import com.goldenebrg.authserver.services.config.AssignmentSelectionListField;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class AssignmentsServiceImpl implements AssignmentsService{
-
-    private static final String PATH = "/config.json";
 
     private final ServerConfigurationService configurationService;
     private final AssignmentsDao assignmentsDao;
@@ -45,33 +46,19 @@ public class AssignmentsServiceImpl implements AssignmentsService{
         return assignmentsProperties.keySet();
     }
 
-    @Override
-    public Collection<AssignmentJson> getAllAssignments() {
-        return assignmentsProperties.values();
-    }
 
     @Override
-    public Set<String> getAssignmentFieldsNames(String assignment) {
-        if (isAssignmentNotExists(assignment)) return Collections.emptySet();
-        return Optional.ofNullable(assignmentsProperties.get(assignment).getFields())
-                .map(fields -> fields.stream().map(AssignmentField::getName)
-                        .collect(Collectors.toSet())).orElse(Collections.emptySet());
-    }
-
-    @Override
-    public AssignmentField getAssignmentFields(String assignment, String field) {
-        if (isAssignmentNotExists(assignment)) return null;
-        return Optional.ofNullable(assignmentsProperties.get(assignment).getFields())
-                .flatMap(fields -> fields.stream().filter(f -> field.equals(f.getName()))
-                .findAny()).orElse(null);
-
-    }
-
-    @Override
-    public Map<String, AssignmentField> getAssignmentFieldsMap(String assignment) {
+    public Map<String, AssignmentSelectionListField> getAssignmentSelectionListFieldsMap(String assignment) {
         if (isAssignmentNotExists(assignment)) return Collections.emptyMap();
-        return Optional.ofNullable(assignmentsProperties.get(assignment).getFields())
-                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentField::getName, field -> field))).orElse(Collections.emptyMap());
+        return Optional.ofNullable(assignmentsProperties.get(assignment).getLists())
+                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentSelectionListField::getName, field -> field))).orElse(Collections.emptyMap());
+    }
+
+    @Override
+    public Map<String, AssignmentInputField> getAssignmentInputFieldsMap(String assignment) {
+        if (isAssignmentNotExists(assignment)) return Collections.emptyMap();
+        return Optional.ofNullable(assignmentsProperties.get(assignment).getInputs())
+                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentInputField::getName, field -> field))).orElse(Collections.emptyMap());
     }
 
 
@@ -83,11 +70,6 @@ public class AssignmentsServiceImpl implements AssignmentsService{
     @Override
     public boolean isAssignmentNotExists(String assignment) {
         return !isAssignmentExists(assignment);
-    }
-
-    @Override
-    public AssignmentJson getAssignment(String assignment) {
-        return assignmentsProperties.get(assignment);
     }
 
     @Override
@@ -110,5 +92,38 @@ public class AssignmentsServiceImpl implements AssignmentsService{
     @Override
     public void deleteById(UUID id) {
         assignmentsDao.deleteById(id);
+    }
+
+    @Override
+    public Map<String, Set<String>> getAssignmentPrints(User user) {
+        Map<String, Set<String>> map = new TreeMap<>(Comparator.naturalOrder());
+        @NonNull Map<String, UserAssignments> userServices = user.getUserServices();
+        for (Map.Entry<String, UserAssignments> assignmentsEntry : userServices.entrySet()) {
+            String name = assignmentsEntry.getKey();
+            Map<String, AssignmentInputField> inputFieldsMap = getAssignmentInputFieldsMap(name);
+
+            Set<String> set = Optional.ofNullable(map.get(name)).orElse(new TreeSet<>(Comparator.naturalOrder()));
+
+            for (Map.Entry<String, Serializable> fieldsEntry : assignmentsEntry.getValue().getFields().entrySet()) {
+                String field = fieldsEntry.getKey();
+
+                String string = Optional.ofNullable(inputFieldsMap.get(field)).map(f -> {
+                    String type = f.getType();
+                    switch (type) {
+                        case "password":
+                            return field + ": ***";
+                        default:
+                            return field + ": " + fieldsEntry.getValue();
+                    }
+                }).orElse(field + ": " + fieldsEntry.getValue());
+
+                set.add(string);
+            }
+
+            map.put(name, set);
+
+        }
+
+        return map;
     }
 }

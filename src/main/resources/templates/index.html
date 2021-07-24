@@ -52,9 +52,10 @@
 
     <div class="row sub-panel">
         <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
-            <tr th:each="service : ${user.getUserServices().values()}">
-                <td class="mdl-data-table__cell--non-numeric" th:utext="${service.getName()}"></td>
-                <td class="mdl-data-table__cell--non-numeric" th:each="field : ${service.getFields().keySet()}" th:utext="${field + ': ' + service.getFields().get(field)}"></td>
+            <tr th:each="service : ${assignments.entrySet()}">
+                <td class="mdl-data-table__cell--non-numeric" th:utext="${service.key}"></td>
+                <td class="mdl-data-table__cell--non-numeric" th:each="field : ${service.value}"
+                    th:utext="${field}"></td>
             </tr>
         </table>
     </div>
