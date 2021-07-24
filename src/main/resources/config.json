@@ -6,9 +6,6 @@
   "server": {
     "address": "http://localhost:8080",
     "cors": {
-      "origins": [
-        "*"
-      ]
     }
   },
   "defaultRoleIndex": 0,

@@ -15,10 +15,16 @@ public class AuthResponseEntityTool {
         return create(new AuthTokenResponse(request.getId(), token, "Authorized"));
     }
 
+    static @NonNull ResponseEntity<AuthTokenResponse> authTokenResponse(@NonNull AuthRequest request,
+                                                                        @NonNull String message,
+                                                                        @NonNull HttpStatus status) {
+        return create(new AuthTokenResponse(request.getId(), null, message), status);
+    }
+
 
     static @NonNull ResponseEntity<AuthTokenResponse> authTokenResponse(@NonNull AuthRequest request,
-                                                                          @NonNull Exception exception,
-                                                                          @NonNull HttpStatus status) {
+                                                                        @NonNull Exception exception,
+                                                                        @NonNull HttpStatus status) {
         return create(new AuthTokenResponse(request.getId(), null, exception.getMessage()), status);
     }
 
