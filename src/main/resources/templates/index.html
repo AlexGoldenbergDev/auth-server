@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" th:href="@{/dark.css}">
 
     <script th:src="@{/webjars/material-design-lite/1.3.0/material.min.js}"></script>
+    <script th:src="@{/getmdl-select.min.js}"></script>
     <script th:src="@{/webjars/jquery/3.6.0/jquery.min.js}"></script>
     <script th:src="@{/webjars/popper.js/2.9.2/umd/popper.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/5.0.1/js/bootstrap.min.js}"></script>
@@ -23,13 +24,21 @@
     <link rel="stylesheet" type="text/css" th:href="@{/table-dark.css}">
     <link rel="stylesheet" type="text/css" th:href="@{/default-container-dark.css}">
     <link rel="stylesheet" type="text/css" th:href="@{/user-panel-header.css}">
+    <link rel="stylesheet" th:href="@{/getmdl-select.min.css}" type="text/css">
+
 
     <div class="row sub-panel">
-        <div class="col-10" >
+        <div class="col-10">
             <div class="row" sec:authorize="hasRole('ADMIN')">
-                <a href="/admin/invitations"><button   class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button></a>
-                <a href="/admin/assignments"><button class="mdl-button mdl-js-button mdl-button--raised">Assignments Manager</button></a>
-                <a href="/admin/users"><button class="mdl-button mdl-js-button mdl-button--raised">User Manager</button></a>
+                <a href="/admin/invitations">
+                    <button class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button>
+                </a>
+                <a href="/admin/assignments">
+                    <button class="mdl-button mdl-js-button mdl-button--raised">Assignments Manager</button>
+                </a>
+                <a href="/admin/users">
+                    <button class="mdl-button mdl-js-button mdl-button--raised">User Manager</button>
+                </a>
             </div>
         </div>
 
@@ -41,7 +50,6 @@
         </a>
 
 
-
         <form class="col-1" method="POST" th:action="@{/appLogout}">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button class="mdl-button mdl-js-button mdl-button--ico" type="submit">
@@ -50,10 +58,58 @@
         </form>
     </div>
 
+
+    <form class="row sub-panel" method='POST' th:action="@{/assignments/edit/}"
+          th:if="${!availableServices.isEmpty()}" th:object="${assignmentToAdd}">
+
+        <div class="mdl-textfield mdl-js-textfield getmdl-select">
+            <input class="mdl-textfield__input" id="new-service-input" readonly
+                   th:field="*{assignment}"
+                   type="text">
+            <input name="new-service-input" type="hidden">
+            <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
+            <label class="mdl-textfield__label" for="new-service-input">Add new service</label>
+            <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu" for="new-service-input">
+                <li class="mdl-menu__item" th:each="service : ${availableServices}"
+                    th:utext="${service}" th:value="${service}"></li>
+
+            </ul>
+        </div>
+        <button class="mdl-button mdl-js-button mdl-button--ico" style="display: inline" type="submit">
+            <i class="material-icons">add</i>
+        </button>
+
+
+    </form>
+
     <div class="row sub-panel">
         <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
             <tr th:each="service : ${assignments.entrySet()}">
                 <td class="mdl-data-table__cell--non-numeric" th:utext="${service.key}"></td>
+                <td class="mdl-data-table__cell--non-numeric">
+                    <form th:action="@{'/assignments/delete/{service}'(service=${service.key})}" th:method="DELETE">
+                        <input th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"
+                               type="hidden"
+                        />
+                        <button class="mdl-button mdl-js-button mdl-button--ico" type="submit">
+                            <i class="material-icons">delete</i>
+                        </button>
+                    </form>
+                </td>
+                <td class="mdl-data-table__cell--non-numeric">
+
+                    <form
+                            method='POST' th:action="@{'/assignments/edit/{service}' (service=${service.key})}">
+                        <input th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}"
+                               type="hidden"
+                        />
+                        <button class="mdl-button mdl-js-button mdl-button--ico" style="display: inline" type="submit">
+                            <i class="material-icons">settings</i>
+                        </button>
+                    </form>
+                </td>
                 <td class="mdl-data-table__cell--non-numeric" th:each="field : ${service.value}"
                     th:utext="${field}"></td>
             </tr>

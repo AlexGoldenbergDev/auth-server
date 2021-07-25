@@ -48,6 +48,7 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user")
     @MapKey(name = "name")
     @NonNull
+
     private final Map<String, UserAssignments> userServices = new TreeMap<>(Comparator.naturalOrder());
 
 

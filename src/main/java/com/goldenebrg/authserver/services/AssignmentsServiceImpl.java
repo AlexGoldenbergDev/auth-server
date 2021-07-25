@@ -12,6 +12,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
@@ -42,8 +43,11 @@ public class AssignmentsServiceImpl implements AssignmentsService{
 
 
     @Override
-    public Set<String> getAllAssignmentsNames() {
-        return assignmentsProperties.keySet();
+    public Set<String> getAllAssignmentsNames(@NonNull String role) {
+        return assignmentsProperties.entrySet().stream()
+                .filter(entry -> entry.getValue().getChangers().contains(role))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
 
@@ -81,7 +85,7 @@ public class AssignmentsServiceImpl implements AssignmentsService{
     public void save(String uuid, AssignmentForm dto) {
         userDao.findById(UUID.fromString(uuid))
                 .ifPresent(user -> {
-                    UserAssignments userAssignments = new UserAssignments();
+                    UserAssignments userAssignments = Optional.ofNullable(user.getUserServices().get(dto.getAssignment())).orElse(new UserAssignments());
                     userAssignments.setUser(user);
                     userAssignments.setName(dto.getAssignment());
                     dto.getFields().forEach(userAssignments::addField);
@@ -125,5 +129,13 @@ public class AssignmentsServiceImpl implements AssignmentsService{
         }
 
         return map;
+    }
+
+    @Override
+    @Transactional
+    public void deleteService(String user, String service) {
+        Optional.ofNullable(userDao.findUserByUsername(user)).map(User::getUserServices)
+                .flatMap(services -> Optional.ofNullable(services.remove(service)))
+                .ifPresent(assignmentsDao::delete);
     }
 }

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignments Master</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/material-design-lite/1.3.0/material.min.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/webjars/material-design-icons/4.0.0/material-icons.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.0.1/css/bootstrap.min.css} " type="text/css"/>
+    <link rel="stylesheet" th:href="@{/general.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/dark.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/table-dark.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/default-container-dark.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/user-panel-header.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/getmdl-select.min.css}" type="text/css">
+
+    <script th:src="@{/webjars/material-design-lite/1.3.0/material.min.js}"></script>
+    <script th:src="@{/getmdl-select.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.6.0/jquery.min.js}"></script>
+    <script th:src="@{/webjars/popper.js/2.9.2/umd/popper.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.0.1/js/bootstrap.min.js}"></script>
+</head>
+<body>
+
+<div class="container app-container" sec:authorize="isAuthenticated()">
+
+
+    <div class="row sub-panel">
+        <div class="col-10">
+
+        </div>
+
+        <a class="col-3 user-link" th:href="@{/}">
+            <div class=" user-name">
+                <i class="material-icons" style="vertical-align: middle; display: inline">account_circle</i>
+                <p sec:authentication="name" style="vertical-align: middle; display: inline"></p>
+            </div>
+        </a>
+
+
+        <form class="col-1" method="POST" th:action="@{/appLogout}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <button class="mdl-button mdl-js-button mdl-button--ico" type="submit">
+                <i class="material-icons">logout</i>
+            </button>
+        </form>
+    </div>
+
+    <form class="row sub-panel" method='POST'
+          th:action="@{/assignments/{assignment}/{user}(assignment=${assignment}, user=${user})}"
+          th:object="${dto}">
+        <input th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}"
+               type="hidden"/>
+
+        <input th:field="*{assignment}" th:value="${assignment}" type="hidden">
+
+
+        <div th:if="${selectionListFieldsMap != null && inputFieldsMap != null}">
+            <div th:each="field : ${selectionListFieldsMap.entrySet()}">
+                <label th:value="${field.key}"></label>
+
+                <div th:switch="${field.value.getOptions() == null && field.value.getOptions().isEmpty()}">
+                    <input th:case="${true}" th:value="${field.value.getDef() == null ? '' : field.value.getDef()}"
+                           type="text">
+
+                    <div class="mdl-textfield mdl-js-textfield getmdl-select" th:case="${false}">
+                        <input class="mdl-textfield__input" readonly th:field="*{fields['__${field.key}__']}"
+                               th:id="${field.key}"
+                               th:value="${persistedField.get(field.key) != null ? persistedField.get(field.key) : '' }"
+                               type="text">
+                        <input th:name="${field.key}" type="hidden" value="">
+                        <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
+                        <label class="mdl-textfield__label" th:for="${field.key}" th:utext="${field.key}"></label>
+                        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu" th:for="${field.key}">
+                            <li class="mdl-menu__item" th:each="option : ${field.value.getOptions()}"
+                                th:utext="${option}" th:value="${option}"></li>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div th:each="field : ${inputFieldsMap.entrySet()}">
+                <label th:value="${field.key}"></label>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <input class="mdl-textfield__input" th:field="*{fields['__${field.key}__']}" th:id="${field.key}"
+                           th:name="${field.key}" th:type='${field.value.getType()}'
+                           th:value="${persistedField.get(field.key) != null ? persistedField.get(field.key) : '' }"/>
+                    <label class="mdl-textfield__label" th:for="${field.key}" th:text="${field.key}"></label>
+                </div>
+            </div>
+        </div>
+
+        <button class="mdl-button mdl-js-button mdl-button--ico" type="submit">Submit</button>
+
+    </form>
+</div>
+
+</div>
+
+
+</body>
+</html>
+

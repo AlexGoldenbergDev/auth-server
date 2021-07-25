@@ -81,4 +81,5 @@ public interface UserService {
     PasswordResetToken getPasswordToken(UUID id);
 
     User resetPassword(UUID id, PasswordResetForm form);
+
 }

@@ -39,7 +39,7 @@ public class UserAssignments {
     boolean isEnabled;
 
     @Getter
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "assignments_fields")
     @Column(name = "value")
     Map<String, Serializable> fields = new TreeMap<>(Comparator.naturalOrder());

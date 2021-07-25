@@ -11,6 +11,7 @@ public class AssignmentJson implements Serializable {
 
     @JsonProperty("isEnabled")
     Boolean isEnabled;
+    Set<String> changers;
     Set<AssignmentSelectionListField> lists;
     Set<AssignmentInputField> inputs;
 
