@@ -77,8 +77,12 @@ public class AssignmentsServiceImpl implements AssignmentsService{
     }
 
     @Override
-    public Map<User, Map<String, UserAssignments>> getUsersAssignmentsMap() {
-        return userDao.findAll().stream().collect(Collectors.toMap(user -> user, User::getUserServices));
+    public Map<User, Map<String, UserAssignments>> getUsersAssignmentsMapForAdmin() {
+
+        String adminRole = configurationService.getAdminRole();
+        return userDao.findAll().stream().collect(Collectors.toMap(user -> user, user -> user.getUserServices().entrySet().stream()
+                .filter(entry -> configurationService.getAssignmentChangers(entry.getKey()).contains(adminRole))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
     }
 
     @Override
@@ -86,9 +90,12 @@ public class AssignmentsServiceImpl implements AssignmentsService{
         userDao.findById(UUID.fromString(uuid))
                 .ifPresent(user -> {
                     UserAssignments userAssignments = Optional.ofNullable(user.getUserServices().get(dto.getAssignment())).orElse(new UserAssignments());
-                    userAssignments.setUser(user);
                     userAssignments.setName(dto.getAssignment());
                     dto.getFields().forEach(userAssignments::addField);
+
+                    userAssignments.setUser(user);
+                    user.addUserService(userAssignments);
+
                     assignmentsDao.save(userAssignments);
                 });
     }
@@ -113,12 +120,10 @@ public class AssignmentsServiceImpl implements AssignmentsService{
 
                 String string = Optional.ofNullable(inputFieldsMap.get(field)).map(f -> {
                     String type = f.getType();
-                    switch (type) {
-                        case "password":
-                            return field + ": ***";
-                        default:
-                            return field + ": " + fieldsEntry.getValue();
+                    if ("password".equals(type)) {
+                        return field + ": ***";
                     }
+                    return field + ": " + fieldsEntry.getValue();
                 }).orElse(field + ": " + fieldsEntry.getValue());
 
                 set.add(string);

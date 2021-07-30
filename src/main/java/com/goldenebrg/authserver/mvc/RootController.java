@@ -52,17 +52,20 @@ public class RootController {
         if (!"anonymousUser".equals(userPrincipal)) {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             @NonNull UUID id = principal.getUser().getId();
-            User user = userService.getUserById(id);
+            Optional<User> user = userService.getUserById(id);
+            if (user.isPresent()) {
+                User u = user.get();
+                Map<String, Set<String>> assignments = assignmentsService.getAssignmentPrints(u);
 
-            Map<String, Set<String>> assignments = assignmentsService.getAssignmentPrints(user);
+                Set<String> available = assignmentsService.getAllAssignmentsNames(u.getRole());
+                available.removeAll(u.getUserServices().keySet());
 
-            Set<String> available = assignmentsService.getAllAssignmentsNames(user.getRole());
-            available.removeAll(user.getUserServices().keySet());
-
-            modelAndView.addObject("user", user);
-            modelAndView.addObject("assignments", assignments);
-            modelAndView.addObject("assignmentToAdd", new AssignmentForm());
-            modelAndView.addObject("availableServices", available);
+                modelAndView.addObject("user", user);
+                modelAndView.addObject("assignments", assignments);
+                modelAndView.addObject("assignmentToAdd", new AssignmentForm());
+                modelAndView.addObject("availableServices", available);
+            } else
+                modelAndView.addObject("login", new LoginDto());
         } else
             modelAndView.addObject("login", new LoginDto());
 
@@ -93,7 +96,10 @@ public class RootController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        User userObj = userService.getUserById(userDetails.getUser().getId());
+        @NonNull UUID id = userDetails.getUser().getId();
+        Optional<User> userObj = userService.getUserById(id);
+
+
         @NonNull String role = userDetails.getUser().getRole();
 
 
@@ -103,7 +109,7 @@ public class RootController {
         modelAndView.addObject("selectionListFieldsMap", selectionListFieldsMap);
         modelAndView.addObject("inputFieldsMap", inputFieldsMap);
 
-        Map<String, Serializable> fields = Optional.ofNullable(userObj.getUserServices())
+        Map<String, Serializable> fields = userObj.map(User::getUserServices)
                 .map(map -> map.get(assignment))
                 .map(UserAssignments::getFields)
                 .orElse(new HashMap<>());
@@ -112,7 +118,7 @@ public class RootController {
         modelAndView.addObject("persistedField", fields);
         modelAndView.addObject("dto", new AssignmentForm());
         modelAndView.addObject("assignment", assignment);
-        modelAndView.addObject("user", userObj.getId().toString());
+        modelAndView.addObject("user", id.toString());
 
 
         return modelAndView;

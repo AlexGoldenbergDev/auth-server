@@ -11,10 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -184,6 +181,18 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
                 .map(ServerConfiguration::getCors)
                 .map(CorsConfiguration::getHeaders)
                 .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public Set<String> getAssignmentChangers(String assignment) {
+
+        return Optional.ofNullable(getAssignments().get(assignment)).map(AssignmentJson::getChangers).orElse(Collections.emptySet());
+    }
+
+    @Override
+    public String getAdminRole() {
+        int adminRoleIndex = appConfig.getAdminRoleIndex();
+        return appConfig.getRoles().get(adminRoleIndex);
     }
 
 

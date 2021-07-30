@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface ServerConfigurationService {
 
@@ -43,4 +44,8 @@ public interface ServerConfigurationService {
     List<String> getCorsMethods();
 
     List<String> getCorsHeaders();
+
+    Set<String> getAssignmentChangers(String assignment);
+
+    String getAdminRole();
 }

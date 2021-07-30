@@ -73,6 +73,12 @@
                                 <i class="material-icons">delete</i>
                             </button>
                         </form>
+
+                        <a th:href="@{/admin/assignments/master/{assignment}/{user}(assignment=${assignment}, user=${user.getId().toString()})}">
+                            <button class="mdl-button mdl-js-button mdl-button--ico" style="display: inline">
+                                <i class="material-icons">settings</i>
+                            </button>
+                        </a>
                     </div>
                     <div th:if="${assignmentsMap.get(user) == null || assignmentsMap.get(user).get(assignment) == null}">
 

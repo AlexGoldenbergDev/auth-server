@@ -23,7 +23,7 @@ public interface AssignmentsService {
     boolean isAssignmentNotExists(String assignment);
 
 
-    Map<User, Map<String, UserAssignments>> getUsersAssignmentsMap();
+    Map<User, Map<String, UserAssignments>> getUsersAssignmentsMapForAdmin();
 
     void save(String user, AssignmentForm dto);
 

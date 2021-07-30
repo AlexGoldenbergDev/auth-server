@@ -10,6 +10,7 @@ import org.springframework.lang.NonNull;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -70,7 +71,7 @@ public interface UserService {
 
     void deleteUserById(UUID id);
 
-    User getUserById(UUID id);
+    Optional<User> getUserById(UUID id);
 
     boolean isEmailSignedUp(RequestForm requestForm);
 

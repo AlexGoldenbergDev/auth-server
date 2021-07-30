@@ -229,8 +229,8 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User getUserById(UUID id) {
-        return userDao.getOne(id);
+    public Optional<User> getUserById(UUID id) {
+        return userDao.findById(id);
     }
 
     @Override
@@ -242,16 +242,20 @@ public class UserServiceImpl implements UserService{
     @Override
     public void changeRole(ChangeRoleDto dto) {
         String id = dto.getId();
-        User user = getUserById(UUID.fromString(id));
-        user.setRole(dto.getRole());
-        userDao.save(user);
+        getUserById(UUID.fromString(id)).ifPresent(user -> {
+            user.setRole(dto.getRole());
+            userDao.save(user);
+        });
+
     }
 
     @Override
     public void toggleEnabledStatus(String id, boolean status) {
-        User user = getUserById(UUID.fromString(id));
-        user.setEnabled(status);
-        userDao.save(user);
+        getUserById(UUID.fromString(id)).ifPresent(user -> {
+            user.setEnabled(status);
+            userDao.save(user);
+        });
+
     }
 
     @Override

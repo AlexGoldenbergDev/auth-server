@@ -59,37 +59,85 @@
 
 
         <div th:if="${selectionListFieldsMap != null && inputFieldsMap != null}">
+
+
             <div th:each="field : ${selectionListFieldsMap.entrySet()}">
                 <label th:value="${field.key}"></label>
 
-                <div th:switch="${field.value.getOptions() == null && field.value.getOptions().isEmpty()}">
-                    <input th:case="${true}" th:value="${field.value.getDef() == null ? '' : field.value.getDef()}"
-                           type="text">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fullwidth">
+                    <input class="mdl-textfield__input" readonly tabIndex="-1" type="text">
+                    <input th:field="*{fields['__${field.key}__']}" type="hidden">
+                    <label class="mdl-textfield__label" th:for="${'fields['''}+ ${field.key}+ ${''']'}"
+                           th:value="${field.key}"></label>
+                    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu"
+                        th:for="${'fields['''}+ ${field.key}+ ${''']'}">
 
-                    <div class="mdl-textfield mdl-js-textfield getmdl-select" th:case="${false}">
-                        <input class="mdl-textfield__input" readonly th:field="*{fields['__${field.key}__']}"
-                               th:id="${field.key}"
-                               th:value="${persistedField.get(field.key) != null ? persistedField.get(field.key) : '' }"
-                               type="text">
-                        <input th:name="${field.key}" type="hidden" value="">
-                        <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
-                        <label class="mdl-textfield__label" th:for="${field.key}" th:utext="${field.key}"></label>
-                        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu" th:for="${field.key}">
-                            <li class="mdl-menu__item" th:each="option : ${field.value.getOptions()}"
-                                th:utext="${option}" th:value="${option}"></li>
+                        <li class="mdl-menu__item selected" data-selected="true"
+                            th:data-val="${option}"
+                            th:each="option : ${field.value.getOptions()}"
+                            th:if="${option.equals(persistedField.get(field.key))}"
+                            th:utext="${option}"></li>
 
-                        </ul>
-                    </div>
+                        <li class="mdl-menu__item" th:data-val="${option}"
+                            th:each="option : ${field.value.getOptions()}"
+                            th:if="${!option.equals(persistedField.get(field.key))}" th:utext="${option}"></li>
+
+                        <li class="mdl-menu__item selected" data-selected="true"
+                            th:data-val="${option}"
+                            th:each="option : ${field.value.getOptions()}"
+                            th:if="${dto.fields.get(field.key) == null && option.equals(field.value.getDef())}"
+                            th:utext="${option}"></li>
+
+                        <li class="mdl-menu__item" th:data-val="${option}"
+                            th:each="option : ${field.value.getOptions()}"
+                            th:if="${dto.fields.get(field.key) == null && !option.equals(field.value.getDef())}"
+                            th:utext="${option}"></li>
+                    </ul>
                 </div>
+
             </div>
 
-            <div th:each="field : ${inputFieldsMap.entrySet()}">
+
+            <!--    <div th:each="field : ${selectionListFieldsMap.entrySet()}">
+                    <label th:value="${field.key}"></label>
+
+                    <div th:switch="${field.value.getOptions() == null && field.value.getOptions().isEmpty()}">
+
+                        <div class="mdl-textfield mdl-js-textfield getmdl-select" th:case="${false}">
+                            <input class="mdl-textfield__input" readonly th:field="*{fields['__${field.key}__']}"
+                                   th:id="${field.key}"
+                                   th:value="${persistedField.get(field.key) != null ? persistedField.get(field.key) : '' }"
+                                   type="text">
+                            <input th:name="${field.key}" type="hidden" value="">
+                            <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
+                            <label class="mdl-textfield__label" th:for="${field.key}" th:utext="${field.key}"></label>
+                            <ul class="mdl-menu mdl-menu&#45;&#45;bottom-left mdl-js-menu" th:for="${field.key}">
+                                <li class="mdl-menu__item" th:each="option : ${field.value.getOptions()}"
+                                    th:utext="${option}" th:value="${option}"></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>-->
+
+            <!--<div th:each="field : ${inputFieldsMap.entrySet()}">
                 <label th:value="${field.key}"></label>
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield&#45;&#45;floating-label">
                     <input class="mdl-textfield__input" th:field="*{fields['__${field.key}__']}" th:id="${field.key}"
                            th:name="${field.key}" th:type='${field.value.getType()}'
                            th:value="${persistedField.get(field.key) != null ? persistedField.get(field.key) : '' }"/>
                     <label class="mdl-textfield__label" th:for="${field.key}" th:text="${field.key}"></label>
+                </div>
+            </div>-->
+
+            <div th:each="field : ${inputFieldsMap.entrySet()}">
+                <label th:value="${field.key}"></label>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <input class="mdl-textfield__input" th:id="${field.key}"
+                           th:name="${'fields['''}+ ${field.key}+ ${''']'}" th:type='${field.value.getType()}'
+                           th:value="${persistedField.get(field.key)}"/>
+                    <label class="mdl-textfield__label" th:for="${'fields['''}+ ${field.key}+ ${''']'}"
+                           th:text="${field.key}"></label>
                 </div>
             </div>
         </div>

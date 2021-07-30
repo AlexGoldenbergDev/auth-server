@@ -14,6 +14,7 @@ public class AppConfig {
     SecurityConfiguration security;
     List<String> roles;
     int defaultRoleIndex;
+    int adminRoleIndex;
 
 
 }
