@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignments Fragments</title>
+</head>
+<body>
+
+
+<div th:fragment="selection-input">
+    <label th:value="${field.key}"></label>
+
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select getmdl-select__fullwidth">
+        <input class="mdl-textfield__input" readonly tabIndex="-1" type="text">
+        <input th:field="*{fields['__${field.key}__']}" type="hidden">
+        <label class="mdl-textfield__label" th:for="${'fields['''}+ ${field.key}+ ${''']'}"
+               th:value="${field.key}"></label>
+        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu"
+            th:for="${'fields['''}+ ${field.key}+ ${''']'}">
+
+            <li class="mdl-menu__item selected" data-selected="true"
+                th:data-val="${option}"
+                th:each="option : ${field.value.getOptions()}"
+                th:if="${option.equals(valueCheckMap.get(field.key))}"
+                th:utext="${option}"></li>
+
+            <li class="mdl-menu__item" th:data-val="${option}"
+                th:each="option : ${field.value.getOptions()}"
+                th:if="${!option.equals(valueCheckMap.get(field.key))}" th:utext="${option}"></li>
+
+            <li class="mdl-menu__item selected" data-selected="true"
+                th:data-val="${option}"
+                th:each="option : ${field.value.getOptions()}"
+                th:if="${valueCheckMap.get(field.key) == null && option.equals(field.value.getDef())}"
+                th:utext="${option}"></li>
+
+            <li class="mdl-menu__item" th:data-val="${option}"
+                th:each="option : ${field.value.getOptions()}"
+                th:if="${valueCheckMap.get(field.key) == null && !option.equals(field.value.getDef())}"
+                th:utext="${option}"></li>
+        </ul>
+    </div>
+</div>
+
+
+<div th:fragment="text-input">
+    <label th:value="${field.key}"></label>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" th:id="${field.key}"
+               th:name="${'fields['''}+ ${field.key}+ ${''']'}" th:type='${field.value.getType()}'
+               th:value="${valueCheckMap.get(field.key)}"/>
+        <label class="mdl-textfield__label" th:for="${'fields['''}+ ${field.key}+ ${''']'}"
+               th:text="${field.key}"></label>
+    </div>
+</div>
+
+
+<div th:fragment="assignmentForm">
+    <input th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}"
+           type="hidden"/>
+
+    <input th:field="*{assignment}" th:value="${assignment}" type="hidden">
+
+
+    <div th:each="field : ${selectionListFieldsMap.entrySet()}" th:if="selectionListFieldsMap != null" th:insert="/assignments-fragments :: selection-input
+        (field=${field}, valueCheckMap=${valueCheckMap})">
+    </div>
+
+    <div th:each="field : ${inputFieldsMap.entrySet()}" th:if="inputFieldsMap != null" th:insert="/assignments-fragments :: text-input
+        (field=${field}, valueCheckMap=${valueCheckMap})">
+    </div>
+
+    <button class="mdl-button mdl-js-button mdl-button--ico" type="submit">Submit</button>
+</div>
+
+
+</body>
+</html>

@@ -23,35 +23,8 @@
 <body>
 
 <div class="container app-container" sec:authorize="isAuthenticated()">
-    <div class="row sub-panel">
-        <div class="col-10">
-            <div class="row" sec:authorize="hasRole('ADMIN')">
-                <a href="/admin/invitations">
-                    <button class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button>
-                </a>
-                <a href="/admin/assignments">
-                    <button class="mdl-button mdl-js-button mdl-button--raised">Assignments Manager</button>
-                </a>
-                <a href="/admin/users">
-                    <button class="mdl-button mdl-js-button mdl-button--raised">User Manager</button>
-                </a>
-            </div>
-        </div>
+    <div th:replace="auth-fragments :: auth-header"></div>
 
-        <a class="col-3 user-link" th:href="@{/}">
-            <div class="user-name">
-                <i class="material-icons" style="vertical-align: middle; display: inline">account_circle</i>
-                <p sec:authentication="name" style="vertical-align: middle; display: inline"></p>
-            </div>
-        </a>
-
-        <form class="col-1" method="POST" th:action="@{/appLogout}">
-            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
-            <button class="mdl-button mdl-js-button mdl-button--ico" type="submit">
-                <i class="material-icons">logout</i>
-            </button>
-        </form>
-    </div>
     <div class="row sub-panel">
         <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
             <tr>
