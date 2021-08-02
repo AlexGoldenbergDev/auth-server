@@ -5,8 +5,7 @@ import com.goldenebrg.authserver.jpa.entities.UserAssignments;
 import com.goldenebrg.authserver.rest.beans.AssignmentForm;
 import com.goldenebrg.authserver.rest.beans.LoginDto;
 import com.goldenebrg.authserver.security.auth.service.UserDetailsImpl;
-import com.goldenebrg.authserver.services.AssignmentsService;
-import com.goldenebrg.authserver.services.UserService;
+import com.goldenebrg.authserver.services.FacadeService;
 import com.goldenebrg.authserver.services.config.AssignmentInputField;
 import com.goldenebrg.authserver.services.config.AssignmentSelectionListField;
 import lombok.NonNull;
@@ -28,14 +27,12 @@ import static com.goldenebrg.authserver.mvc.AdminAssignmentController.filterFiel
 @Slf4j
 public class RootController {
 
-    private final UserService userService;
-    private final AssignmentsService assignmentsService;
+    private final FacadeService facadeService;
 
 
     @Autowired
-    RootController(UserService userService, AssignmentsService assignmentsService) {
-        this.userService = userService;
-        this.assignmentsService = assignmentsService;
+    RootController(FacadeService facadeService) {
+        this.facadeService = facadeService;
     }
 
 
@@ -52,12 +49,12 @@ public class RootController {
         if (!"anonymousUser".equals(userPrincipal)) {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             @NonNull UUID id = principal.getUser().getId();
-            Optional<User> user = userService.getUserById(id);
+            Optional<User> user = facadeService.findUser(id);
             if (user.isPresent()) {
                 User u = user.get();
-                Map<String, Set<String>> assignments = assignmentsService.getAssignmentPrints(u);
+                Map<String, Set<String>> assignments = facadeService.getAssignmentPrints(u);
 
-                Set<String> available = assignmentsService.getAllAssignmentsNames(u.getRole());
+                Set<String> available = facadeService.getAssignmentsNames(u.getRole());
                 available.removeAll(u.getUserServices().keySet());
 
                 modelAndView.addObject("user", user);
@@ -97,14 +94,14 @@ public class RootController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         @NonNull UUID id = userDetails.getUser().getId();
-        Optional<User> userObj = userService.getUserById(id);
+        Optional<User> userObj = facadeService.findUser(id);
 
 
         @NonNull String role = userDetails.getUser().getRole();
 
 
-        Map<String, AssignmentSelectionListField> selectionListFieldsMap = filterFieldsByRole(assignmentsService.getAssignmentSelectionListFieldsMap(assignment), role);
-        Map<String, AssignmentInputField> inputFieldsMap = filterFieldsByRole(assignmentsService.getAssignmentInputFieldsMap(assignment), role);
+        Map<String, AssignmentSelectionListField> selectionListFieldsMap = filterFieldsByRole(facadeService.getAssignmentSelectionListFieldsMap(assignment), role);
+        Map<String, AssignmentInputField> inputFieldsMap = filterFieldsByRole(facadeService.getAssignmentInputFieldsMap(assignment), role);
 
         modelAndView.addObject("selectionListFieldsMap", selectionListFieldsMap);
         modelAndView.addObject("inputFieldsMap", inputFieldsMap);
@@ -128,7 +125,8 @@ public class RootController {
     @PostMapping("/assignments/{service}/{user}")
     public RedirectView assignmentsPost(@PathVariable("service") String assignment, @PathVariable("user") String user, @ModelAttribute("dto") AssignmentForm dto) {
         dto.setAssignment(assignment);
-        assignmentsService.save(user, dto);
+
+        facadeService.createService(user, dto);
         return new RedirectView("/");
 
     }
@@ -137,7 +135,7 @@ public class RootController {
     public RedirectView assignmentsPost(@PathVariable("service") String service) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        assignmentsService.deleteService(userDetails.getUsername(), service);
+        facadeService.deleteService(userDetails.getUsername(), service);
         return new RedirectView("/");
 
     }

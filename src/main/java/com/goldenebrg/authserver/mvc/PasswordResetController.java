@@ -1,9 +1,8 @@
 package com.goldenebrg.authserver.mvc;
 
-import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
-import com.goldenebrg.authserver.services.UserService;
+import com.goldenebrg.authserver.services.FacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +14,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.goldenebrg.authserver.mvc.MvcControllerUtils.doAutoLogin;
@@ -25,16 +23,16 @@ import static com.goldenebrg.authserver.mvc.MvcControllerUtils.doAutoLogin;
 @RequestMapping("/reset")
 public class PasswordResetController {
 
-    private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final RootController rootController;
+    private final FacadeService facadeService;
 
 
     @Autowired
-    PasswordResetController(RootController rootController, UserService userService, AuthenticationManager authenticationManager) {
+    PasswordResetController(RootController rootController, AuthenticationManager authenticationManager, FacadeService facadeService) {
         this.rootController = rootController;
-        this.userService = userService;
         this.authenticationManager = authenticationManager;
+        this.facadeService = facadeService;
     }
 
 
@@ -48,16 +46,14 @@ public class PasswordResetController {
 
     @GetMapping("/{id}")
     public ModelAndView passwordReset(@PathVariable("id") UUID id) {
-        ModelAndView modelAndView;
 
-        PasswordResetToken token = userService.getPasswordToken(id);
-
-        if (token != null) {
-            modelAndView = new ModelAndView("resetForm");
+        return facadeService.findPasswordToken(id).map(token -> {
+            ModelAndView modelAndView = new ModelAndView("resetForm");
             modelAndView.addObject("id", id);
             modelAndView.addObject("form", new PasswordResetForm());
-        } else modelAndView = new ModelAndView("index");
-        return modelAndView;
+            return modelAndView;
+        }).orElse(new ModelAndView("index"));
+
     }
 
 
@@ -66,14 +62,13 @@ public class PasswordResetController {
                                       @ModelAttribute("form")
                                       @Valid PasswordResetForm form, BindingResult result, HttpServletRequest request) {
         ModelAndView modelAndView;
-        List<String> messages = userService.getPasswordValidationErrors(form);
+        List<String> messages = facadeService.validatePassword(form);
         if (!messages.isEmpty() || result.hasErrors()) {
             modelAndView = new ModelAndView("resetForm");
             modelAndView.addObject("passwordError", messages);
             return modelAndView;
         } else {
-            Optional.ofNullable(userService.resetPassword(id, form))
-                    .ifPresent(user -> doAutoLogin(authenticationManager, user.getUsername(), form.getPassword(), request));
+            facadeService.resetPassword(id, form).ifPresent(user -> doAutoLogin(authenticationManager, user.getUsername(), form.getPassword(), request));
             modelAndView = rootController.index();
         }
         return modelAndView;
@@ -82,7 +77,7 @@ public class PasswordResetController {
 
     @PostMapping("/send")
     public ModelAndView passwordReset(@ModelAttribute("resetForm") @Valid RequestForm resetForm) {
-        userService.createPasswordReset(resetForm);
+        facadeService.resetPassword(resetForm);
         return rootController.index();
     }
 }

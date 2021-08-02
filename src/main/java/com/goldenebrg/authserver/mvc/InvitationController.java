@@ -1,7 +1,7 @@
 package com.goldenebrg.authserver.mvc;
 
 import com.goldenebrg.authserver.rest.beans.RequestForm;
-import com.goldenebrg.authserver.services.UserService;
+import com.goldenebrg.authserver.services.FacadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,18 +17,18 @@ import java.util.UUID;
 @RequestMapping("/admin/invitations")
 public class InvitationController {
 
-    private final UserService userService;
+    private final FacadeService facadeService;
 
 
     @Autowired
-    InvitationController(UserService userService) {
-        this.userService = userService;
+    InvitationController(FacadeService facadeService) {
+        this.facadeService = facadeService;
     }
 
     @GetMapping("")
     public ModelAndView invitations() {
         ModelAndView modelAndView = new ModelAndView("invitations");
-        modelAndView.addObject("invitations", userService.getSortedInvitations());
+        modelAndView.addObject("invitations", facadeService.getAllInvitations());
         modelAndView.addObject("requestForm", new RequestForm());
         return modelAndView;
     }
@@ -39,18 +39,18 @@ public class InvitationController {
         ModelAndView modelAndView;
         if (result.hasErrors()) {
             modelAndView = new ModelAndView("invitations");
-            modelAndView.addObject("invitations", userService.getSortedInvitations());
+            modelAndView.addObject("invitations", facadeService.getAllInvitations());
             modelAndView.addObject("requestForm", model.getAttribute("requestForm"));
         } else {
 
-            boolean emailSignedUp = userService.isEmailSignedUp(requestForm);
+            boolean emailSignedUp = facadeService.isSignedUp(requestForm);
             modelAndView = invitations();
 
             if (emailSignedUp) {
                 modelAndView.addObject("emailError",
                         String.format("User for email '%s' already exists", requestForm.getEmail()));
             } else
-                userService.createInvitation(requestForm);
+                facadeService.createInvitation(requestForm);
 
         }
 
@@ -59,9 +59,9 @@ public class InvitationController {
 
     @DeleteMapping("/{id}")
     public RedirectView deleteInvitation(@PathVariable UUID id) {
-        userService.deleteRequestById(id);
+        facadeService.deleteInvitation(id);
         ModelAndView modelAndView = new ModelAndView("invitations");
-        modelAndView.addObject("invitations", userService.getSortedInvitations());
+        modelAndView.addObject("invitations", facadeService.getAllInvitations());
         return new RedirectView("/admin/invitations");
     }
 

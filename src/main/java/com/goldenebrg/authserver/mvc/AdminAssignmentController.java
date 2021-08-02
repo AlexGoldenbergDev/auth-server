@@ -4,8 +4,7 @@ import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.jpa.entities.UserAssignments;
 import com.goldenebrg.authserver.rest.beans.AssignmentForm;
 import com.goldenebrg.authserver.security.auth.service.UserDetailsImpl;
-import com.goldenebrg.authserver.services.AssignmentsService;
-import com.goldenebrg.authserver.services.UserService;
+import com.goldenebrg.authserver.services.FacadeService;
 import com.goldenebrg.authserver.services.config.AbstractAssignmentField;
 import com.goldenebrg.authserver.services.config.AssignmentInputField;
 import com.goldenebrg.authserver.services.config.AssignmentSelectionListField;
@@ -29,14 +28,12 @@ import java.util.stream.Collectors;
 public class AdminAssignmentController {
 
 
-    private final AssignmentsService assignmentsService;
-    private final UserService userService;
+    private final FacadeService facadeService;
 
 
     @Autowired
-    AdminAssignmentController(AssignmentsService assignmentsService, UserService userService) {
-        this.assignmentsService = assignmentsService;
-        this.userService = userService;
+    AdminAssignmentController(FacadeService facadeService) {
+        this.facadeService = facadeService;
     }
 
     public static <T extends AbstractAssignmentField> Map<String, T> filterFieldsByRole(Map<String, T> map, String role) {
@@ -47,7 +44,7 @@ public class AdminAssignmentController {
 
     @DeleteMapping("/{id}")
     public RedirectView assignments(@PathVariable("id") UUID id) {
-        assignmentsService.deleteById(id);
+        facadeService.deleteService(id);
         return new RedirectView("/admin/assignments");
     }
 
@@ -59,8 +56,8 @@ public class AdminAssignmentController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         @NonNull String role = userDetails.getUser().getRole();
 
-        modelAndView.addObject("assignmentsMap", assignmentsService.getUsersAssignmentsMapForAdmin());
-        modelAndView.addObject("assignments", assignmentsService.getAllAssignmentsNames(role));
+        modelAndView.addObject("assignmentsMap", facadeService.getAdminAssignmentsMap());
+        modelAndView.addObject("assignments", facadeService.getAssignmentsNames(role));
         return modelAndView;
     }
 
@@ -71,13 +68,13 @@ public class AdminAssignmentController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Optional<User> targetUser = userService.getUserById(UUID.fromString(user));
+        Optional<User> targetUser = facadeService.findUser(user);
 
 
         @NonNull String role = userDetails.getUser().getRole();
 
-        Map<String, AssignmentSelectionListField> selectionListFieldsMap = filterFieldsByRole(assignmentsService.getAssignmentSelectionListFieldsMap(assignment), role);
-        Map<String, AssignmentInputField> inputFieldsMap = filterFieldsByRole(assignmentsService.getAssignmentInputFieldsMap(assignment), role);
+        Map<String, AssignmentSelectionListField> selectionListFieldsMap = filterFieldsByRole(facadeService.getAssignmentSelectionListFieldsMap(assignment), role);
+        Map<String, AssignmentInputField> inputFieldsMap = filterFieldsByRole(facadeService.getAssignmentInputFieldsMap(assignment), role);
 
         modelAndView.addObject("selectionListFieldsMap", selectionListFieldsMap);
         modelAndView.addObject("inputFieldsMap", inputFieldsMap);
@@ -102,7 +99,7 @@ public class AdminAssignmentController {
 
     @PostMapping("/master/{user}")
     public RedirectView assignmentsPost(@PathVariable("user") String user, @ModelAttribute("dto") AssignmentForm dto) {
-        assignmentsService.save(user, dto);
+        facadeService.createService(user, dto);
         return new RedirectView("/admin/assignments");
 
     }

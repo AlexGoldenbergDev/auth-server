@@ -1,6 +1,8 @@
 package com.goldenebrg.authserver.services;
 
+import com.goldenebrg.authserver.services.config.AssignmentInputField;
 import com.goldenebrg.authserver.services.config.AssignmentJson;
+import com.goldenebrg.authserver.services.config.AssignmentSelectionListField;
 import com.goldenebrg.authserver.services.config.ConstrainPattern;
 
 import javax.validation.constraints.NotEmpty;
@@ -48,4 +50,14 @@ public interface ServerConfigurationService {
     Set<String> getAssignmentChangers(String assignment);
 
     String getAdminRole();
+
+    Set<String> getAssignmentsNames(String role);
+
+    boolean isAssignmentExists(String assignment);
+
+    boolean isAssignmentNotExists(String assignment);
+
+    Map<String, AssignmentInputField> getAssignmentInputFieldsMap(String assignment);
+
+    Map<String, AssignmentSelectionListField> getAssignmentSelectionListFieldsMap(String assignment);
 }

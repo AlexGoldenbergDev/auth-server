@@ -1,7 +1,7 @@
 package com.goldenebrg.authserver.mvc;
 
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
-import com.goldenebrg.authserver.services.UserService;
+import com.goldenebrg.authserver.services.FacadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -14,25 +14,25 @@ import java.util.UUID;
 @RequestMapping("/admin/users")
 public class UsersController {
 
-    private final UserService userService;
 
+    private final FacadeService facadeService;
 
     @Autowired
-    UsersController(UserService userService) {
-        this.userService = userService;
+    UsersController(FacadeService facadeService) {
+        this.facadeService = facadeService;
     }
 
 
     @GetMapping("")
     public ModelAndView users() {
         ModelAndView modelAndView = new ModelAndView("users");
-        modelAndView.addObject("users", userService.getSortedUsers());
+        modelAndView.addObject("users", facadeService.getAllUsers());
         return modelAndView;
     }
 
     @DeleteMapping("/{id}")
     public RedirectView deleteUser(@PathVariable("id") UUID id) {
-        userService.deleteUserById(id);
+        facadeService.deleteUser(id);
         return new RedirectView("/admin/users");
     }
 
@@ -41,7 +41,7 @@ public class UsersController {
 
         ModelAndView modelAndView = new ModelAndView("/role");
         modelAndView.addObject("id", id);
-        modelAndView.addObject("roles", userService.getAvailableRoles());
+        modelAndView.addObject("roles", facadeService.getAvailableRoles());
         modelAndView.addObject("dto", new ChangeRoleDto());
         return modelAndView;
     }
@@ -49,13 +49,13 @@ public class UsersController {
     @PostMapping("/{id}/role")
     public RedirectView changeRole(@ModelAttribute("dto") ChangeRoleDto dto, @PathVariable("id") String id) {
         dto.setId(id);
-        userService.changeRole(dto);
+        facadeService.changeRole(dto);
         return new RedirectView("/admin/users");
     }
 
     @PostMapping("/{id}/enabled/{status}")
     public RedirectView toggleUserEnabledStatus(@PathVariable("id") String id, @PathVariable("status") boolean status) {
-        userService.toggleEnabledStatus(id, status);
+        facadeService.changeEnabledStatus(id, status);
         return new RedirectView("/admin/users");
     }
 }

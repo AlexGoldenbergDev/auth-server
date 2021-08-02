@@ -19,11 +19,13 @@ class UserServiceImplTest {
     private static final String PTN_CHARS = "Login must contain any letters";
 
 
-    private final UserService userService;
+    private final LoginValidationService loginValidationService;
+    private final PasswordValidationService passwordValidationService;
 
     @Autowired
-    UserServiceImplTest(UserService userService) {
-        this.userService = userService;
+    UserServiceImplTest(LoginValidationService loginValidationService, PasswordValidationService passwordValidationService) {
+        this.loginValidationService = loginValidationService;
+        this.passwordValidationService = passwordValidationService;
     }
 
     @Test
@@ -32,7 +34,7 @@ class UserServiceImplTest {
         userDto.setPassword("012345");
         userDto.setMatchingPassword("01234");
 
-        assertArrayEquals(new String[]{"Passwords doesn't match each other"}, userService.getPasswordValidationErrors(userDto).toArray());
+        assertArrayEquals(new String[]{"Passwords doesn't match each other"}, passwordValidationService.validate(userDto).toArray());
     }
 
     @Test
@@ -65,7 +67,7 @@ class UserServiceImplTest {
         userDto.setPassword(password);
         userDto.setMatchingPassword(password);
 
-        assertArrayEquals(messages, userService.getPasswordValidationErrors(userDto).toArray());
+        assertArrayEquals(messages, passwordValidationService.validate(userDto).toArray());
     }
 
 
@@ -74,7 +76,7 @@ class UserServiceImplTest {
         UserDto userDto = new UserDto();
         userDto.setLogin("123");
 
-        assertArrayEquals(new String[]{PTN_CHARS}, userService.getLoginValidationErrors(userDto).toArray());
+        assertArrayEquals(new String[]{PTN_CHARS}, loginValidationService.validate(userDto).toArray());
     }
 
     @Test
@@ -82,7 +84,7 @@ class UserServiceImplTest {
         UserDto userDto = new UserDto();
         userDto.setLogin("login");
 
-        assertArrayEquals(new String[0], userService.getLoginValidationErrors(userDto).toArray());
+        assertArrayEquals(new String[0], loginValidationService.validate(userDto).toArray());
     }
 
 }

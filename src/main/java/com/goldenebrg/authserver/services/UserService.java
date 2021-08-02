@@ -3,12 +3,11 @@ package com.goldenebrg.authserver.services;
 import com.goldenebrg.authserver.jpa.entities.InvitationToken;
 import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
-import com.goldenebrg.authserver.rest.beans.*;
-import com.sun.istack.NotNull;
-import org.springframework.lang.NonNull;
+import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
+import com.goldenebrg.authserver.rest.beans.PasswordResetForm;
+import com.goldenebrg.authserver.rest.beans.RequestForm;
+import com.goldenebrg.authserver.rest.beans.UserDto;
 
-import javax.validation.Valid;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,66 +20,34 @@ public interface UserService {
 
     List<String> getAvailableRoles();
 
-    List<String> getPasswordValidationErrors(@NotNull PasswordInputForm userDto);
-
-    List<String> getLoginValidationErrors(@NotNull UserDto userDto);
-
-    /**
-     * Creates a new Invitation {@link InvitationToken}
-     */
-    void createInvitation(@NotNull @Valid RequestForm email);
-
-    void createPasswordReset(RequestForm requestForm);
-
-    /**
-     * Validates presence of {@link InvitationToken} with following UUID
-     * @param uuid - {@link InvitationToken#getId()}
-     */
-    boolean isRequestUUIDExists(UUID uuid);
-
-
-    /**
-     * Returns full {@link InvitationToken} list
-     *
-     * @return List of all persisted requests
-     */
-    List<InvitationToken> getInvitations();
-
-    Collection<InvitationToken> getSortedInvitations();
-
-
-    /**
-     * Deletes specific {@link InvitationToken}
-     *
-     * @param uuid - {@link InvitationToken#getId()}
-     */
-    void deleteRequestById(UUID uuid);
-
     /**
      * Creates a new {@link User};
-     * @param userDto - {@link UserDto} Sign In Form
+     *
+     * @param userDto   - {@link UserDto} Sign In Form
      * @param requestId - request id
+     * @return
      */
-    User registerNewUserAccount(@NonNull UserDto userDto, UUID requestId);
 
 
-    List<User> getUsers();
-
-    Collection<User> getSortedUsers();
+    List<User> getAll();
 
 
-    void deleteUserById(UUID id);
+    void deleteById(UUID id);
 
-    Optional<User> getUserById(UUID id);
+    Optional<User> findById(UUID id);
 
-    boolean isEmailSignedUp(RequestForm requestForm);
+    boolean isSignedUp(RequestForm requestForm);
 
     void changeRole(ChangeRoleDto dto);
 
-    void toggleEnabledStatus(String id, boolean status);
+    void changeEnabledStatus(UUID id, boolean status);
 
-    PasswordResetToken getPasswordToken(UUID id);
 
-    User resetPassword(UUID id, PasswordResetForm form);
+    Optional<User> resetPassword(PasswordResetToken token, PasswordResetForm form);
 
+    Optional<User> findByLogin(String login);
+
+    Optional<User> findUserByEmail(String email);
+
+    User create(UserDto userDto, InvitationToken invitationToken);
 }

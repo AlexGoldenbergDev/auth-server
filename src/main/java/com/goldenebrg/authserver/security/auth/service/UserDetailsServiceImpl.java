@@ -53,13 +53,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new RuntimeException(String.format("Too many login attempts. Try in %d minutes", loginAttemptTimeoutMinutes));
         }
 
-        User user = userRepository.findUserByUsername(username);
+        Optional<User> user = userRepository.findUserByUsername(username);
 
-        if (user == null) {
+        if (!user.isPresent()) {
             throw new UsernameNotFoundException("Could not find user");
         }
 
-        return new UserDetailsImpl(user);
+        return new UserDetailsImpl(user.get());
     }
 
 }

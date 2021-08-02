@@ -1,10 +1,9 @@
 package com.goldenebrg.authserver.mvc;
 
-import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.rest.beans.LoginDto;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import com.goldenebrg.authserver.security.auth.service.UserDetailsImpl;
-import com.goldenebrg.authserver.services.UserService;
+import com.goldenebrg.authserver.services.FacadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,13 +28,13 @@ import static com.goldenebrg.authserver.mvc.MvcControllerUtils.getErrorPage;
 @RequestMapping("/signup")
 public class SignUpController {
 
-    private final UserService userService;
+    private final FacadeService facadeService;
     private final AuthenticationManager authenticationManager;
 
 
     @Autowired
-    SignUpController(UserService userService, AuthenticationManager authenticationManager) {
-        this.userService = userService;
+    SignUpController(FacadeService facadeService, AuthenticationManager authenticationManager) {
+        this.facadeService = facadeService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -45,7 +44,7 @@ public class SignUpController {
 
         try {
             UUID uuid = UUID.fromString(invitation);
-            if (userService.isRequestUUIDExists(uuid)) {
+            if (facadeService.isInvitationExists(uuid)) {
                 modelAndView = new ModelAndView("signup");
                 modelAndView.addObject("user", new UserDto());
                 modelAndView.addObject("uuid", invitation);
@@ -70,8 +69,8 @@ public class SignUpController {
 
         try {
             UUID requestIid = UUID.fromString(uuid);
-            List<String> passwordErrors = userService.getPasswordValidationErrors(userDto);
-            List<String> loginErrors = userService.getLoginValidationErrors(userDto);
+            List<String> passwordErrors = facadeService.validatePassword(userDto);
+            List<String> loginErrors = facadeService.validateLogin(userDto);
 
 
             if (!passwordErrors.isEmpty() || !loginErrors.isEmpty() || bindingResult.hasErrors()) {
@@ -81,16 +80,23 @@ public class SignUpController {
                 modelAndView.addObject("user", userDto);
                 modelAndView.addObject("uuid", requestIid);
             } else {
-                modelAndView = new ModelAndView("index");
                 userDto.setUuid(UUID.randomUUID());
-                User user = userService.registerNewUserAccount(userDto, requestIid);
-                modelAndView.addObject("user", userService.registerNewUserAccount(userDto, requestIid));
-                Authentication authenticationToken = new UsernamePasswordAuthenticationToken(new UserDetailsImpl(user), userDto.getPassword());
-                Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-                SecurityContext sc = SecurityContextHolder.getContext();
-                sc.setAuthentication(authenticate);
-                HttpSession session = request.getSession(true);
-                session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+                modelAndView = facadeService.signUp(userDto, requestIid).map(user -> {
+                    ModelAndView mav = new ModelAndView("index");
+                    mav.addObject("user", user);
+                    Authentication authenticationToken = new UsernamePasswordAuthenticationToken(new UserDetailsImpl(user), userDto.getPassword());
+                    Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+                    SecurityContext sc = SecurityContextHolder.getContext();
+                    sc.setAuthentication(authenticate);
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
+                    return mav;
+                }).orElseGet(() -> {
+                    ModelAndView mav = new ModelAndView("index");
+                    mav.addObject("login", new LoginDto());
+                    return mav;
+                });
+
             }
         } catch (Exception uaeEx) {
             modelAndView = new ModelAndView("index");

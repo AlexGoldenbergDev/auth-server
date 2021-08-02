@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,7 +31,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
         this.host = InetAddress.getLoopbackAddress().getHostName();
 
-        try (InputStream stream = AssignmentsServiceImpl.class.getResourceAsStream(PATH)){
+        try (InputStream stream = ServerConfigurationService.class.getResourceAsStream(PATH)) {
             appConfig = new ObjectMapper().readValue(stream, AppConfig.class);
 
         } catch (IOException e) {
@@ -193,6 +194,41 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     public String getAdminRole() {
         int adminRoleIndex = appConfig.getAdminRoleIndex();
         return appConfig.getRoles().get(adminRoleIndex);
+    }
+
+    @Override
+    public Set<String> getAssignmentsNames(String role) {
+        return getAssignments().entrySet().stream()
+                .filter(entry -> entry.getValue().getChangers().contains(role))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean isAssignmentExists(String assignment) {
+        return getAssignments().containsKey(assignment);
+    }
+
+    @Override
+    public boolean isAssignmentNotExists(String assignment) {
+        return !isAssignmentExists(assignment);
+    }
+
+    @Override
+    public Map<String, AssignmentInputField> getAssignmentInputFieldsMap(String assignment) {
+        if (isAssignmentNotExists(assignment)) return Collections.emptyMap();
+
+        return Optional.ofNullable(getAssignments().get(assignment).getInputs())
+                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentInputField::getName, field -> field)))
+                .orElse(Collections.emptyMap());
+    }
+
+    @Override
+    public Map<String, AssignmentSelectionListField> getAssignmentSelectionListFieldsMap(String assignment) {
+        if (isAssignmentNotExists(assignment)) return Collections.emptyMap();
+        return Optional.ofNullable(getAssignments().get(assignment).getLists())
+                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentSelectionListField::getName, field -> field)))
+                .orElse(Collections.emptyMap());
     }
 
 
