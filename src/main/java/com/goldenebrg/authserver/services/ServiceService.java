@@ -12,8 +12,6 @@ public interface ServiceService {
 
     void delete(UUID id);
 
-    void delete(User user, String service);
-
     void delete(UserAssignments userAssignments);
 
     Map<User, Map<String, UserAssignments>> getAdminAssignmentsMap();

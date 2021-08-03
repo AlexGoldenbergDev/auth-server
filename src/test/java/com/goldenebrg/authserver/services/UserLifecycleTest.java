@@ -27,21 +27,22 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @MockBean(ServerConfigurationService.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class UserServiceTest {
+class UserLifecycleTest {
 
 
     private static UUID inviteId;
     private static UUID uuid;
     private static String email;
     private static UUID passwordResetId;
+
     private final ServerConfigurationService serverConfigurationService;
     private final FacadeService facadeService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    UserServiceTest(ServerConfigurationService serverConfigurationService,
-                    FacadeService facadeService,
-                    PasswordEncoder passwordEncoder) {
+    UserLifecycleTest(ServerConfigurationService serverConfigurationService,
+                      FacadeService facadeService,
+                      PasswordEncoder passwordEncoder) {
         this.serverConfigurationService = serverConfigurationService;
         this.facadeService = facadeService;
         this.passwordEncoder = passwordEncoder;
@@ -372,6 +373,28 @@ class UserServiceTest {
     @Test
     @Order(10)
     void When_createInvitation_then_NotEmpty() {
+        Mockito.when(serverConfigurationService.getHost()).thenReturn("localhost");
+
+        String email = "email@email.org";
+        RequestForm requestForm = new RequestForm();
+        requestForm.setEmail(email);
+
+        assertDoesNotThrow(() -> facadeService.createInvitation(requestForm));
+        assertThat(facadeService.getAllInvitations()).isEmpty();
+
+    }
+
+    @Test
+    @Order(11)
+    void When_deleteUser_then_Empty() {
+        assertDoesNotThrow(() -> facadeService.deleteUser(uuid));
+        assertThat(facadeService.getAllUsers()).isEmpty();
+
+    }
+
+    @Test
+    @Order(12)
+    void When_DeleteInvitation_then_Empty() {
         Mockito.when(serverConfigurationService.getHost()).thenReturn("localhost");
 
         String email = "email@email.org";

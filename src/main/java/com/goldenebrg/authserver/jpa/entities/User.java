@@ -45,7 +45,7 @@ public class User implements Serializable {
     private Boolean enabled;
 
     @Getter
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @MapKey(name = "name")
     @NonNull
     private final Map<String, UserAssignments> userServices = new TreeMap<>(Comparator.naturalOrder());

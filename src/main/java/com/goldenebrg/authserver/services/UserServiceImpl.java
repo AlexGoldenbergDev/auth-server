@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -23,6 +24,7 @@ import java.util.function.Supplier;
 
 @Service
 @Slf4j
+@Transactional
 public class UserServiceImpl implements UserService{
 
     private final ServerConfigurationService configurationService;

@@ -48,7 +48,8 @@ public class FacadeServiceImpl implements FacadeService {
 
     @Override
     public void createInvitation(RequestForm requestForm) {
-        invitationService.create(requestForm);
+        boolean isEmailSignedUp = userService.findUserByEmail(requestForm.getEmail()).isPresent();
+        if (!isEmailSignedUp) invitationService.create(requestForm);
     }
 
     @Override
