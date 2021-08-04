@@ -2,44 +2,61 @@ package com.goldenebrg.authserver.services;
 
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import com.goldenebrg.authserver.services.config.ConstrainPattern;
+import com.goldenebrg.authserver.services.validation.chain.login.LoginCustomPatternValidator;
+import com.goldenebrg.authserver.services.validation.chain.login.LoginExistenceValidator;
+import com.goldenebrg.authserver.services.validation.chain.login.LoginSizeValidator;
+import com.goldenebrg.authserver.services.validation.chain.login.LoginValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 @Service
 public class LoginValidationServiceImpl implements LoginValidationService {
 
-
+    private final ApplicationContext applicationContext;
     private final ServerConfigurationService configurationService;
-    private final UserService userService;
+
+    private LoginValidator validator;
+    private int counter;
 
     @Autowired
-    public LoginValidationServiceImpl(ServerConfigurationService configurationService, UserService userService) {
+    public LoginValidationServiceImpl(ApplicationContext applicationContext,
+                                      ServerConfigurationService configurationService) {
+        this.applicationContext = applicationContext;
         this.configurationService = configurationService;
-        this.userService = userService;
     }
 
+
+    @PostConstruct
+    void initialize() {
+        LoginValidator next = applicationContext.getBean(LoginExistenceValidator.class);
+        LoginValidator validator = applicationContext.getBean(LoginSizeValidator.class);
+
+        this.validator = next;
+
+        next.setNext(validator);
+        next = validator;
+
+        this.counter = 2;
+
+        for (ConstrainPattern pattern : configurationService.getLoginPatterns()) {
+            LoginCustomPatternValidator bean = applicationContext.getBean(LoginCustomPatternValidator.class);
+            bean.setConstrainPattern(pattern);
+            next.setNext(bean);
+            next = bean;
+            this.counter++;
+        }
+    }
+
+
     @Override
-    public List<String> validate(UserDto dto) {
-        String login = dto.getLogin();
-
-        List<String> messages = new LinkedList<>();
-
-        int loginMaxSize = configurationService.getLoginMaxSize();
-        int loginMinSize = configurationService.getLoginMinSize();
-        if (login.length() > loginMaxSize || login.length() < loginMinSize)
-            messages.add(String.format("Login size must be between %d and %d characters", loginMinSize, loginMaxSize));
-
-        configurationService.getLoginPatterns().stream().filter(ptn -> !Pattern.compile(ptn.getPattern()).matcher(login).find())
-                .map(ConstrainPattern::getMessage).forEach(messages::add);
-
-        boolean isUserExists = Optional.ofNullable(userService.findByLogin(login)).isPresent();
-        if (isUserExists) messages.add("User with this login already exists. Please, check for another option");
-
-        return messages;
+    public List<String> validate(@NotNull UserDto dto) {
+        List<String> messages = new ArrayList<>(this.counter);
+        return validator.validate(messages, dto);
     }
 }
