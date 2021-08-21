@@ -13,11 +13,17 @@ import com.goldenebrg.authserver.rest.beans.RequestForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -72,6 +78,7 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
+    @Cacheable(value = "allUsers")
     public List<User> getAll() {
         TreeSet<User> users = new TreeSet<>(Comparator.comparing(User::getUsername));
         users.addAll(userDao.findAll());
@@ -79,11 +86,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#id"),
+            @CacheEvict(value = "servicePrints", key = "#id"),
+            @CacheEvict(value = {"userByLogin", "userByEmail", "allUsers"}, allEntries = true)
+    })
     public void deleteById(UUID id) {
         userDao.deleteById(id);
     }
 
     @Override
+    @CachePut(value = "userById", key = "#id")
     public Optional<User> findById(UUID id) {
         return userDao.findById(id);
     }
@@ -91,15 +104,20 @@ public class UserServiceImpl implements UserService{
     @Override
     public boolean isSignedUp(RequestForm requestForm) {
         String email = requestForm.getEmail();
-        return userDao.findUserByEmail(email).isPresent();
+        return findUserByEmail(email).isPresent();
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#dto.id"),
+            @CacheEvict(value = "servicePrints", key = "#dto.id"),
+            @CacheEvict(value = {"userByLogin", "userByEmail", "allUsers"}, allEntries = true)
+    })
     public void changeRole(ChangeRoleDto dto) {
         if (configurationService.getRoles().contains(dto.getRole())) {
-            String id = dto.getId();
+            UUID id = dto.getId();
 
-            findById(UUID.fromString(id)).ifPresent(user -> {
+            findById(id).ifPresent(user -> {
                 String role = dto.getRole();
                 log.debug("Changing user {} role to {}", id, role);
                 user.setRole(role);
@@ -111,6 +129,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#id"),
+            @CacheEvict(value = "servicePrints", key = "#id"),
+            @CacheEvict(value = {"userByLogin", "userByEmail", "allUsers"}, allEntries = true)
+    })
     public void changeEnabledStatus(UUID id, boolean status) {
         findById(id).ifPresent(user -> {
             user.setEnabled(status);
@@ -121,6 +144,10 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "userByEmail", key = "#token.email"),
+            @CacheEvict(value = {"userByLogin", "userById", "allUsers", "servicePrints"}, allEntries = true)
+    })
     public Optional<User> resetPassword(PasswordResetToken token, PasswordResetForm form) {
         return userDao.findUserByEmail(token.getEmail()).map(user -> {
             user.setPassword(passwordEncoder.encode(form.getMatchingPassword()));
@@ -131,16 +158,26 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Cacheable(value = "userByLogin", key = "#login")
     public Optional<User> findByLogin(String login) {
         return userDao.findUserByUsername(login);
     }
 
     @Override
-    public Optional<User> findUserByEmail(String email) {
+    @Cacheable(value = "userByEmail", key = "#email", unless = "#result == null")
+    public Optional<User> findUserByEmail(@NotNull @NotEmpty String email) {
         return userDao.findUserByEmail(email);
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "userById", key = "#userDto.uuid"),
+                    @CacheEvict(value = "servicePrints", key = "#userDto.uuid"),
+                    @CacheEvict(value = "userByLogin", key = "#userDto.login"),
+                    @CacheEvict(value = "userByEmail", key = "#invitationToken.email"),
+                    @CacheEvict(value = {"allUsers"}, allEntries = true)
+            })
     public User create(UserDto userDto, InvitationToken invitationToken) {
         String role = configurationService.getDefaultRole();
         User user = new User(userDto.getUuid(), userDto.getLogin(), invitationToken.getEmail(), role,

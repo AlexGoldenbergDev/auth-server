@@ -40,7 +40,7 @@ public class UsersController {
     }
 
     @PostMapping("/{id}/role")
-    public RedirectView changeRole(@ModelAttribute("dto") ChangeRoleDto dto, @PathVariable("id") String id) {
+    public RedirectView changeRole(@ModelAttribute("dto") ChangeRoleDto dto, @PathVariable("id") UUID id) {
         dto.setId(id);
         facadeService.changeRole(dto);
         return new RedirectView("/admin/users");

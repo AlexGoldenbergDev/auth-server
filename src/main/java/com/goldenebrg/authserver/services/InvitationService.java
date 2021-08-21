@@ -13,8 +13,10 @@ public interface InvitationService {
 
     /**
      * Creates a new Invitation {@link InvitationToken}
+     *
+     * @return
      */
-    void create(@NotNull @Valid RequestForm requestForm);
+    InvitationToken create(@NotNull @Valid RequestForm requestForm);
 
     /**
      * Validates presence of {@link InvitationToken} with following UUID

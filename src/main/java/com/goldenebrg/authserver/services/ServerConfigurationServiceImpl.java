@@ -3,6 +3,7 @@ package com.goldenebrg.authserver.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goldenebrg.authserver.services.config.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -60,6 +61,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public Map<String, ServiceJson> getServices() {
         return appConfig.getServices().getServices();
     }
@@ -67,6 +69,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     @Override
     @NotNull
     @NotEmpty
+    @Cacheable(value = "config", key = "#root.method.name")
     public List<String> getRoles() {
         return appConfig.getRoles();
     }
@@ -74,16 +77,20 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     @Override
     @NotNull
     @NotEmpty
+    @Cacheable(value = "config", key = "#root.method.name")
+
     public String getDefaultRole() {
         return appConfig.getRoles().get(appConfig.getDefaultRoleIndex());
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getSignUpTokenExpirationHours() {
         return appConfig.getSignUpTokenExpirationHours();
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getPasswordResetTokenExpirationHours() {
         return appConfig.getPasswordResetTokenExpirationHours();
     }
@@ -91,12 +98,14 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     @Override
     @NotNull
     @NotEmpty
+    @Cacheable(value = "config", key = "#root.method.name")
     public String getHost() {
         return Optional.ofNullable(appConfig.getServer()).map(ServerConfiguration::getAddress).orElse(host);
     }
 
     @Override
     @NotNull
+    @Cacheable(value = "config", key = "#root.method.name")
     public List<ConstrainPattern> getPasswordPatterns() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getPassword)
@@ -106,6 +115,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
     @Override
     @NotNull
+    @Cacheable(value = "config", key = "#root.method.name")
     public List<ConstrainPattern> getLoginPatterns() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
@@ -114,6 +124,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getPasswordMinSize() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getPassword)
@@ -122,6 +133,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getPasswordMaxSize() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getPassword)
@@ -130,6 +142,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getLoginMinSize() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
@@ -138,6 +151,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getLoginMaxAttempts() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
@@ -146,6 +160,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getLoginAttemptTimeoutMinutes() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
@@ -153,6 +168,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public int getLoginMaxSize() {
         return Optional.ofNullable(appConfig.getSecurity())
                 .map(SecurityConfiguration::getLogin)
@@ -161,6 +177,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public List<String> getCorsOrigins() {
         return Optional.ofNullable(appConfig.getServer())
                 .map(ServerConfiguration::getCors)
@@ -169,6 +186,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public List<String> getCorsMethods() {
         return Optional.ofNullable(appConfig.getServer())
                 .map(ServerConfiguration::getCors)
@@ -177,6 +195,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public List<String> getCorsHeaders() {
         return Optional.ofNullable(appConfig.getServer())
                 .map(ServerConfiguration::getCors)
@@ -185,12 +204,14 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "servicesChangers", key = "#service")
     public Set<String> getServicesChangers(String service) {
 
         return Optional.ofNullable(getServices().get(service)).map(ServiceJson::getChangers).orElse(Collections.emptySet());
     }
 
     @Override
+    @Cacheable(value = "config", key = "#root.method.name")
     public String getAdminRole() {
         int adminRoleIndex = appConfig.getAdminRoleIndex();
         return appConfig.getRoles().get(adminRoleIndex);
@@ -205,6 +226,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "serviceExistence", key = "#service")
     public boolean isServiceExists(String service) {
         return getServices().containsKey(service);
     }
@@ -215,6 +237,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "servicesInputFields", key = "#service")
     public Map<String, ServiceInputField> getServicesInputFieldsMap(String service) {
         if (isServiceNotExists(service)) return Collections.emptyMap();
 
@@ -224,6 +247,7 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
+    @Cacheable(value = "servicesSelectionFields", key = "#service")
     public Map<String, ServiceSelectionListField> getServicesSelectionListFieldsMap(String service) {
         if (isServiceNotExists(service)) return Collections.emptyMap();
         return Optional.ofNullable(getServices().get(service).getLists())

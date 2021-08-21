@@ -4,6 +4,7 @@ import com.goldenebrg.authserver.jpa.entities.User;
 import com.goldenebrg.authserver.jpa.entities.UserServices;
 import com.goldenebrg.authserver.services.config.ServiceInputField;
 import lombok.NonNull;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -19,6 +20,7 @@ public class TranslateService {
         this.configurationService = configurationService;
     }
 
+    @Cacheable(value = "servicePrints", key = "#user.id")
     public Map<String, Set<String>> getServicesPrints(User user) {
         Map<String, Set<String>> map = new TreeMap<>(Comparator.naturalOrder());
         @NonNull Map<String, UserServices> userServices = user.getUserServices();
