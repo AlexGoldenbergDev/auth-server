@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 @Data
-public class AbstractAssignmentField implements Serializable {
+public class AbstractServiceField implements Serializable {
 
     String name;
     Set<String> changers;

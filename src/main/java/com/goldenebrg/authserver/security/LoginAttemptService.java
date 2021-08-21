@@ -4,6 +4,7 @@ import com.goldenebrg.authserver.services.ServerConfigurationService;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class LoginAttemptService {
 
     private final int loginMaxAttempts;
@@ -30,9 +32,12 @@ public class LoginAttemptService {
 
     }
 
+
     public void loginSucceeded(String key) {
         attemptsCache.invalidate(key);
+        log.trace("Login succeeded for {}", key);
     }
+
 
     public void loginFailed(String key) {
         int attempts;
@@ -42,14 +47,24 @@ public class LoginAttemptService {
             attempts = 0;
         }
         attempts++;
+        log.trace("Login failed for {}, {} attempts left", key, loginMaxAttempts - attempts);
         attemptsCache.put(key, attempts);
     }
 
+
     public boolean isBlocked(String key) {
+        boolean isBlocked;
         try {
-            return attemptsCache.get(key) >= loginMaxAttempts;
+            isBlocked = attemptsCache.get(key) >= loginMaxAttempts;
         } catch (ExecutionException e) {
-            return false;
+            isBlocked = false;
         }
+        log.trace("Access block status for {}: {}", key, isBlocked);
+        return isBlocked;
+    }
+
+
+    public void forceLoginAttemptBlock(String key) {
+        attemptsCache.put(key, loginMaxAttempts);
     }
 }

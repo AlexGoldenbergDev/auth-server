@@ -3,11 +3,12 @@ package com.goldenebrg.authserver.services;
 import com.goldenebrg.authserver.jpa.entities.InvitationToken;
 import com.goldenebrg.authserver.jpa.entities.PasswordResetToken;
 import com.goldenebrg.authserver.jpa.entities.User;
-import com.goldenebrg.authserver.jpa.entities.UserAssignments;
+import com.goldenebrg.authserver.jpa.entities.UserServices;
 import com.goldenebrg.authserver.rest.beans.*;
-import com.goldenebrg.authserver.services.config.AssignmentInputField;
-import com.goldenebrg.authserver.services.config.AssignmentSelectionListField;
+import com.goldenebrg.authserver.services.config.ServiceInputField;
+import com.goldenebrg.authserver.services.config.ServiceSelectionListField;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 public interface FacadeService {
@@ -33,23 +34,25 @@ public interface FacadeService {
 
     List<String> validateLogin(UserDto userDto);
 
-    void createService(String user, AssignmentForm dto);
+    void createService(UUID id, ServiceForm dto);
 
     void deleteService(UUID id);
 
     void deleteService(String username, String service);
 
-    Map<User, Map<String, UserAssignments>> getAdminAssignmentsMap();
+    Map<User, Map<String, UserServices>> getAdminServicesMap();
 
-    Set<String> getAssignmentsNames(String role);
+    Set<String> getServicesNames(String role);
 
-    Map<String, AssignmentInputField> getAssignmentInputFieldsMap(String assignment);
+    Map<String, ServiceInputField> getServicesInputFieldsMap(String service);
 
-    Map<String, AssignmentSelectionListField> getAssignmentSelectionListFieldsMap(String assignment);
+    Map<String, ServiceSelectionListField> getServicesSelectionListFieldsMap(String service);
 
-    Map<String, Set<String>> getAssignmentPrints(User u);
+    Map<String, Set<String>> getServicesPrints(User u);
 
     Optional<User> findUser(String id);
+
+    Optional<User> findUserByName(String name);
 
     Optional<User> findUser(UUID id);
 
@@ -62,4 +65,6 @@ public interface FacadeService {
     void changeRole(ChangeRoleDto dto);
 
     void changeEnabledStatus(String id, boolean status);
+
+    void forceLoginAttemptBlock(HttpServletRequest request);
 }

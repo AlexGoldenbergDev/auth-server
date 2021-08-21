@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class AssignmentForm implements Serializable {
+public class ServiceForm implements Serializable {
 
-    String assignment;
+    String service;
     Map<String, String> fields = new HashMap<>();
 }

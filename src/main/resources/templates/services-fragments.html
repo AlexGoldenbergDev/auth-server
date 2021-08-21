@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Assignments Fragments</title>
+    <title>services Fragments</title>
 </head>
 <body>
 
@@ -56,19 +56,19 @@
 </div>
 
 
-<div th:fragment="assignmentForm">
+<div th:fragment="serviceForm">
     <input th:name="${_csrf.parameterName}"
            th:value="${_csrf.token}"
            type="hidden"/>
 
-    <input th:field="*{assignment}" th:value="${assignment}" type="hidden">
+    <input th:field="*{service}" th:value="${service}" type="hidden">
 
 
-    <div th:each="field : ${selectionListFieldsMap.entrySet()}" th:if="selectionListFieldsMap != null" th:insert="/assignments-fragments :: selection-input
+    <div th:each="field : ${selectionListFieldsMap.entrySet()}" th:if="selectionListFieldsMap != null" th:insert="/services-fragments :: selection-input
         (field=${field}, valueCheckMap=${valueCheckMap})">
     </div>
 
-    <div th:each="field : ${inputFieldsMap.entrySet()}" th:if="inputFieldsMap != null" th:insert="/assignments-fragments :: text-input
+    <div th:each="field : ${inputFieldsMap.entrySet()}" th:if="inputFieldsMap != null" th:insert="/services-fragments :: text-input
         (field=${field}, valueCheckMap=${valueCheckMap})">
     </div>
 

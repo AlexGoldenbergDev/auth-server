@@ -1,8 +1,8 @@
 package com.goldenebrg.authserver.security.auth.service;
 
 import com.goldenebrg.authserver.jpa.entities.User;
-import com.goldenebrg.authserver.jpa.entities.UserAssignments;
-import com.goldenebrg.authserver.rest.beans.AssignmentForm;
+import com.goldenebrg.authserver.jpa.entities.UserServices;
+import com.goldenebrg.authserver.rest.beans.ServiceForm;
 import lombok.Data;
 import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,20 +53,20 @@ public class UserDetailsImpl implements AppUserDetails {
         return user.getEnabled();
     }
 
-    private static AssignmentForm getAssignmentForm(UserAssignments userAssignments) {
-        AssignmentForm assignmentForm = new AssignmentForm();
-        assignmentForm.setAssignment(userAssignments.getName());
+    private static ServiceForm getServiceForm(UserServices userServices) {
+        ServiceForm serviceForm = new ServiceForm();
+        serviceForm.setService(userServices.getName());
 
         Map<String, String> fields = new TreeMap<>();
-        userAssignments.getFields().forEach((k, v) -> fields.put(k, String.valueOf(v)));
-        assignmentForm.setFields(fields);
-        return assignmentForm;
+        userServices.getFields().forEach((k, v) -> fields.put(k, String.valueOf(v)));
+        serviceForm.setFields(fields);
+        return serviceForm;
     }
 
     @Override
     public Map<String, Object> getClaims() {
         Map<String, Object> map = user.getUserServices().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> getAssignmentForm(entry.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> getServiceForm(entry.getValue())));
 
         @NonNull Boolean enabled = user.getEnabled();
         map.put("enabled", enabled);

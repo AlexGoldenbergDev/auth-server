@@ -1,9 +1,9 @@
 package com.goldenebrg.authserver.services;
 
 import com.goldenebrg.authserver.jpa.entities.User;
-import com.goldenebrg.authserver.jpa.entities.UserAssignments;
-import com.goldenebrg.authserver.rest.beans.AssignmentForm;
+import com.goldenebrg.authserver.jpa.entities.UserServices;
 import com.goldenebrg.authserver.rest.beans.RequestForm;
+import com.goldenebrg.authserver.rest.beans.ServiceForm;
 import com.goldenebrg.authserver.rest.beans.UserDto;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -60,20 +60,20 @@ public class ServicesLifecycleTest {
 
     @Test
     @Order(1)
-    void When_getAdminAssignmentsMap_then_Empty() {
-        assertThat(facadeService.getAdminAssignmentsMap()).isEmpty();
+    void When_getAdminServicesMap_then_Empty() {
+        assertThat(facadeService.getAdminServicesMap()).isEmpty();
     }
 
     @Test
     @Order(1)
     void When_createService_then_Empty() {
-        AssignmentForm assignmentForm = new AssignmentForm();
-        assignmentForm.setAssignment("service");
-        assignmentForm.setFields(Collections.singletonMap("filed", "test"));
+        ServiceForm serviceForm = new ServiceForm();
+        serviceForm.setService("service");
+        serviceForm.setFields(Collections.singletonMap("filed", "test"));
 
-        facadeService.createService("user", assignmentForm);
+        facadeService.createService(uuid, serviceForm);
 
-        assertThat(facadeService.getAdminAssignmentsMap()).isEmpty();
+        assertThat(facadeService.getAdminServicesMap()).isEmpty();
     }
 
     @Test
@@ -82,7 +82,7 @@ public class ServicesLifecycleTest {
         Mockito.when(serverConfigurationService.getHost()).thenReturn("localhost");
         Mockito.when(serverConfigurationService.getDefaultRole()).thenReturn("USER");
         Mockito.when(serverConfigurationService.getAdminRole()).thenReturn("ADMIN");
-        Mockito.when(serverConfigurationService.getAssignmentChangers("service")).thenReturn(Collections.singleton("ADMIN"));
+        Mockito.when(serverConfigurationService.getServicesChangers("service")).thenReturn(Collections.singleton("ADMIN"));
 
         email = "email@email.org";
 
@@ -105,31 +105,31 @@ public class ServicesLifecycleTest {
                 facadeService.getAllInvitations().iterator().next().getId());
 
 
-        AssignmentForm assignmentForm = new AssignmentForm();
-        assignmentForm.setAssignment("service");
-        assignmentForm.setFields(Collections.singletonMap("field", "test"));
+        ServiceForm serviceForm = new ServiceForm();
+        serviceForm.setService("service");
+        serviceForm.setFields(Collections.singletonMap("field", "test"));
 
 
-        facadeService.createService("testUser", assignmentForm);
+        facadeService.createService(uuid, serviceForm);
 
 
-        Map<User, Map<String, UserAssignments>> adminAssignmentsMap = facadeService.getAdminAssignmentsMap();
-        assertThat(adminAssignmentsMap).isNotEmpty();
+        Map<User, Map<String, UserServices>> adminServicesMap = facadeService.getAdminServicesMap();
+        assertThat(adminServicesMap).isNotEmpty();
 
-        Map.Entry<User, Map<String, UserAssignments>> entry = adminAssignmentsMap.entrySet().iterator().next();
+        Map.Entry<User, Map<String, UserServices>> entry = adminServicesMap.entrySet().iterator().next();
 
         User key = entry.getKey();
         assertEquals("testUser", key.getUsername());
 
-        Map<String, UserAssignments> value = entry.getValue();
+        Map<String, UserServices> value = entry.getValue();
         assertThat(value).hasSize(1);
 
-        UserAssignments userAssignments = value.values().iterator().next();
-        assertEquals("service", userAssignments.getName());
+        UserServices userServices = value.values().iterator().next();
+        assertEquals("service", userServices.getName());
 
-        serviceId = userAssignments.getId();
+        serviceId = userServices.getId();
 
-        Map<String, Serializable> fields = userAssignments.getFields();
+        Map<String, Serializable> fields = userServices.getFields();
         assertThat(fields).hasSize(1);
 
         Map.Entry<String, Serializable> fieldEntry = fields.entrySet().iterator().next();
@@ -142,7 +142,7 @@ public class ServicesLifecycleTest {
     @Order(3)
     void When_deleteById_then_Empty() {
         assertThrows(EmptyResultDataAccessException.class, () -> facadeService.deleteService(serviceId));
-        assertThat(facadeService.getAdminAssignmentsMap()).isEmpty();
+        assertThat(facadeService.getAdminServicesMap()).isEmpty();
     }
 
     @Test
@@ -150,11 +150,11 @@ public class ServicesLifecycleTest {
     void Given_Names_When_deleteService_then_Empty() {
         When_createService_then_Saved();
         assertDoesNotThrow(() -> facadeService.deleteService("testUser", "service"));
-        List<UserAssignments> userAssignments = facadeService.getAdminAssignmentsMap().entrySet().stream()
+        List<UserServices> userServices = facadeService.getAdminServicesMap().entrySet().stream()
                 .flatMap(entry -> entry.getValue().values().stream())
                 .collect(Collectors.toList());
 
-        assertThat(userAssignments).isEmpty();
+        assertThat(userServices).isEmpty();
     }
 
 

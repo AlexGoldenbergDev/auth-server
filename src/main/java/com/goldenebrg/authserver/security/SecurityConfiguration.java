@@ -71,10 +71,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .csrf().ignoringAntMatchers("/auth/**")
                 .and()
                 .cors()
-        .and()
+                .and()
                 .authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers("/user").hasAnyRole("ADMIN", "USER")
+                .antMatchers("/user", "/services").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/**").permitAll()
                 .and()
                 .formLogin()
@@ -88,6 +88,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .logout().
                 logoutUrl("/appLogout").
                 logoutSuccessUrl("/")
+                .and()
+                .headers()
+                .xssProtection()
+                .and()
+                .contentSecurityPolicy("script-src 'self'")
         ;
     }
 

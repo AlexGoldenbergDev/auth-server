@@ -13,8 +13,8 @@ import java.util.UUID;
 @EqualsAndHashCode(exclude = "user")
 @ToString
 @NoArgsConstructor
-@Table(name = "assignments")
-public class UserAssignments {
+@Table(name = "services")
+public class UserServices {
 
 
     @Id
@@ -40,7 +40,7 @@ public class UserAssignments {
 
     @Getter
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "assignments_fields")
+    @CollectionTable(name = "services_fields")
     @Column(name = "value")
     Map<String, Serializable> fields = new TreeMap<>(Comparator.naturalOrder());
 

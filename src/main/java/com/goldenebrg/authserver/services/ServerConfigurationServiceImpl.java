@@ -60,8 +60,8 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
 
 
     @Override
-    public Map<String, AssignmentJson> getAssignments() {
-        return appConfig.getAssignments().getAssignments();
+    public Map<String, ServiceJson> getServices() {
+        return appConfig.getServices().getServices();
     }
 
     @Override
@@ -185,9 +185,9 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
-    public Set<String> getAssignmentChangers(String assignment) {
+    public Set<String> getServicesChangers(String service) {
 
-        return Optional.ofNullable(getAssignments().get(assignment)).map(AssignmentJson::getChangers).orElse(Collections.emptySet());
+        return Optional.ofNullable(getServices().get(service)).map(ServiceJson::getChangers).orElse(Collections.emptySet());
     }
 
     @Override
@@ -197,37 +197,37 @@ public class ServerConfigurationServiceImpl implements ServerConfigurationServic
     }
 
     @Override
-    public Set<String> getAssignmentsNames(String role) {
-        return getAssignments().entrySet().stream()
+    public Set<String> getServicesNames(String role) {
+        return getServices().entrySet().stream()
                 .filter(entry -> entry.getValue().getChangers().contains(role))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public boolean isAssignmentExists(String assignment) {
-        return getAssignments().containsKey(assignment);
+    public boolean isServiceExists(String service) {
+        return getServices().containsKey(service);
     }
 
     @Override
-    public boolean isAssignmentNotExists(String assignment) {
-        return !isAssignmentExists(assignment);
+    public boolean isServiceNotExists(String service) {
+        return !isServiceExists(service);
     }
 
     @Override
-    public Map<String, AssignmentInputField> getAssignmentInputFieldsMap(String assignment) {
-        if (isAssignmentNotExists(assignment)) return Collections.emptyMap();
+    public Map<String, ServiceInputField> getServicesInputFieldsMap(String service) {
+        if (isServiceNotExists(service)) return Collections.emptyMap();
 
-        return Optional.ofNullable(getAssignments().get(assignment).getInputs())
-                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentInputField::getName, field -> field)))
+        return Optional.ofNullable(getServices().get(service).getInputs())
+                .map(fields -> fields.stream().collect(Collectors.toMap(ServiceInputField::getName, field -> field)))
                 .orElse(Collections.emptyMap());
     }
 
     @Override
-    public Map<String, AssignmentSelectionListField> getAssignmentSelectionListFieldsMap(String assignment) {
-        if (isAssignmentNotExists(assignment)) return Collections.emptyMap();
-        return Optional.ofNullable(getAssignments().get(assignment).getLists())
-                .map(fields -> fields.stream().collect(Collectors.toMap(AssignmentSelectionListField::getName, field -> field)))
+    public Map<String, ServiceSelectionListField> getServicesSelectionListFieldsMap(String service) {
+        if (isServiceNotExists(service)) return Collections.emptyMap();
+        return Optional.ofNullable(getServices().get(service).getLists())
+                .map(fields -> fields.stream().collect(Collectors.toMap(ServiceSelectionListField::getName, field -> field)))
                 .orElse(Collections.emptyMap());
     }
 

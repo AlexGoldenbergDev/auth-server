@@ -25,7 +25,7 @@
 <div class="container app-container" sec:authorize="isAuthenticated()">
     <div th:replace="auth-fragments :: auth-header"></div>
 
-    <form class="row sub-panel" method='POST' th:action="@{/admin/invitations}" th:object="${requestForm}">
+    <form class="row sub-panel" method='POST' th:action="@{/admin/invitations/}" th:object="${requestForm}">
         <input type="hidden"
                th:name="${_csrf.parameterName}"
                th:value="${_csrf.token}"/>

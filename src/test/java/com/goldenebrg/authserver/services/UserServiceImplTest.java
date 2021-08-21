@@ -15,8 +15,8 @@ class UserServiceImplTest {
     private static final String PTN_CAPITALS = "Password must contain capital letters";
     private static final String PTN_LOWERCASE = "Password must contain lower-case letters";
     private static final String PTN_SPECIAL_CHARS = "Password must contain special characters";
-
     private static final String PTN_CHARS = "Login must contain any letters";
+    private static final String PTN_MATCH = "Passwords doesn't match each other";
 
 
     private final LoginValidationService loginValidationService;
@@ -34,7 +34,7 @@ class UserServiceImplTest {
         userDto.setPassword("012345");
         userDto.setMatchingPassword("01234");
 
-        assertArrayEquals(new String[]{"Passwords doesn't match each other"}, passwordValidationService.validate(userDto).toArray());
+        assertArrayEquals(new String[]{PTN_MATCH, PTN_CAPITALS, PTN_LOWERCASE, PTN_SPECIAL_CHARS}, passwordValidationService.validate(userDto).toArray());
     }
 
     @Test

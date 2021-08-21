@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class AssignmentSelectionListField extends AbstractAssignmentField {
+public class ServiceSelectionListField extends AbstractServiceField {
 
 
     @JsonProperty("default")

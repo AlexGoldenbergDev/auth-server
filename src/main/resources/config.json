@@ -9,6 +9,7 @@
     }
   },
   "defaultRoleIndex": 0,
+  "adminRoleIndex": 1,
   "passwordResetTokenExpirationHours": 2,
   "signUpTokenExpirationHours": 2,
   "security": {
@@ -43,17 +44,64 @@
       ]
     }
   },
-  "assignments": {
+  "services": {
     "storage": {
       "isEnabled": true,
-      "fields": [
+      "changers": [
+        "ADMIN",
+        "USER"
+      ],
+      "lists": [
         {
           "name": "permission",
+          "changers": [
+            "ADMIN"
+          ],
+          "default": "ADMIN",
+          "options": [
+            "USER",
+            "ADMIN"
+          ]
+        }
+      ],
+      "inputs": [
+        {
+          "name": "secret",
+          "changers": [
+            "ADMIN",
+            "USER"
+          ],
+          "type": "password"
+        }
+      ]
+    },
+    "test": {
+      "isEnabled": true,
+      "changers": [
+        "ADMIN"
+      ],
+      "lists": [
+        {
+          "name": "permission",
+          "changers": [
+            "ADMIN",
+            "USER"
+          ],
           "default": "USER",
           "options": [
             "USER",
             "ADMIN"
           ]
+        }
+      ],
+      "inputs": [
+        {
+          "name": "secret",
+          "changers": [
+            "ADMIN",
+            "USER"
+          ],
+          "type": "password"
         }
       ]
     }

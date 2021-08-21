@@ -11,8 +11,8 @@ public class FragmentsController {
         return "auth-fragments";
     }
 
-    @GetMapping("/assignments-fragments")
-    public String getAssignmentsFragments() {
-        return "assignments-fragments";
+    @GetMapping("/services-fragments")
+    public String getServicesFragments() {
+        return "services-fragments";
     }
 }

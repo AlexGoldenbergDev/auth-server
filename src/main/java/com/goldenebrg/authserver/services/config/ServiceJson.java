@@ -7,12 +7,12 @@ import java.io.Serializable;
 import java.util.Set;
 
 @Data
-public class AssignmentJson implements Serializable {
+public class ServiceJson implements Serializable {
 
     @JsonProperty("isEnabled")
     Boolean isEnabled;
     Set<String> changers;
-    Set<AssignmentSelectionListField> lists;
-    Set<AssignmentInputField> inputs;
+    Set<ServiceSelectionListField> lists;
+    Set<ServiceInputField> inputs;
 
 }

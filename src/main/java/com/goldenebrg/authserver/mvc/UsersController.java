@@ -1,7 +1,7 @@
 package com.goldenebrg.authserver.mvc;
 
 import com.goldenebrg.authserver.rest.beans.ChangeRoleDto;
-import com.goldenebrg.authserver.services.FacadeService;
+import com.goldenebrg.authserver.services.mvc.UsersModelController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -15,19 +15,17 @@ import java.util.UUID;
 public class UsersController {
 
 
-    private final FacadeService facadeService;
+    private final UsersModelController facadeService;
 
     @Autowired
-    UsersController(FacadeService facadeService) {
+    UsersController(UsersModelController facadeService) {
         this.facadeService = facadeService;
     }
 
 
     @GetMapping("")
     public ModelAndView users() {
-        ModelAndView modelAndView = new ModelAndView("users");
-        modelAndView.addObject("users", facadeService.getAllUsers());
-        return modelAndView;
+        return facadeService.getUsersPage(new ModelAndView("users"));
     }
 
     @DeleteMapping("/{id}")
@@ -38,12 +36,7 @@ public class UsersController {
 
     @GetMapping("/{id}/role")
     public ModelAndView openRolesManager(@PathVariable("id") String id) {
-
-        ModelAndView modelAndView = new ModelAndView("/role");
-        modelAndView.addObject("id", id);
-        modelAndView.addObject("roles", facadeService.getAvailableRoles());
-        modelAndView.addObject("dto", new ChangeRoleDto());
-        return modelAndView;
+        return facadeService.openRolesManager(new ModelAndView("/role"), id);
     }
 
     @PostMapping("/{id}/role")
@@ -55,7 +48,7 @@ public class UsersController {
 
     @PostMapping("/{id}/enabled/{status}")
     public RedirectView toggleUserEnabledStatus(@PathVariable("id") String id, @PathVariable("status") boolean status) {
-        facadeService.changeEnabledStatus(id, status);
+        facadeService.toggleUserEnabledStatus(id, status);
         return new RedirectView("/admin/users");
     }
 }

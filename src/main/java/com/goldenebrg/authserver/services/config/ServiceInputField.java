@@ -5,6 +5,6 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class AssignmentInputField extends AbstractAssignmentField {
+public class ServiceInputField extends AbstractServiceField {
     String type;
 }

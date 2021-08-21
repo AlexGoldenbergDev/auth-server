@@ -4,7 +4,7 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Assignments</title>
+    <title>Services</title>
 
     <link rel="stylesheet" th:href="@{/webjars/material-design-lite/1.3.0/material.min.css}" type="text/css"/>
     <link rel="stylesheet" th:href="@{/webjars/material-design-icons/4.0.0/material-icons.css}" type="text/css"/>
@@ -29,14 +29,14 @@
         <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
             <tr>
                 <th class="mdl-data-table__cell--non-numeric">User Name</th>
-                <th class="mdl-data-table__cell--non-numeric" th:each="assignment : ${assignments}"
-                    th:utext="${assignment}"></th>
+                <th class="mdl-data-table__cell--non-numeric" th:each="service : ${services}"
+                    th:utext="${service}"></th>
             </tr>
-            <tr th:each="user: ${assignmentsMap.keySet()}">
+            <tr th:each="user: ${servicesMap.keySet()}">
                 <td class="mdl-data-table__cell--non-numeric" th:utext="${user.getUsername()}"></td>
-                <td class="mdl-data-table__cell--non-numeric" th:each="assignment : ${assignments}">
-                    <div th:if="${assignmentsMap.get(user) != null && assignmentsMap.get(user).get(assignment) != null}">
-                        <form th:action="@{'/admin/assignments/{id}'(id=${assignmentsMap.get(user).get(assignment).getId()})}"
+                <td class="mdl-data-table__cell--non-numeric" th:each="service : ${services}">
+                    <div th:if="${servicesMap.get(user) != null && servicesMap.get(user).get(service) != null}">
+                        <form th:action="@{'/admin/services/{id}'(id=${servicesMap.get(user).get(service).getId()})}"
                               th:method="DELETE">
                             <input th:name="${_csrf.parameterName}"
                                    th:value="${_csrf.token}"
@@ -47,15 +47,15 @@
                             </button>
                         </form>
 
-                        <a th:href="@{/admin/assignments/master/{assignment}/{user}(assignment=${assignment}, user=${user.getId().toString()})}">
+                        <a th:href="@{/admin/services/master/{service}/{user}(service=${service}, user=${user.getId().toString()})}">
                             <button class="mdl-button mdl-js-button mdl-button--ico" style="display: inline">
                                 <i class="material-icons">settings</i>
                             </button>
                         </a>
                     </div>
-                    <div th:if="${assignmentsMap.get(user) == null || assignmentsMap.get(user).get(assignment) == null}">
+                    <div th:if="${servicesMap.get(user) == null || servicesMap.get(user).get(service) == null}">
 
-                        <a th:href="@{/admin/assignments/master/{assignment}/{user}(assignment=${assignment}, user=${user.getId().toString()})}">
+                        <a th:href="@{/admin/services/master/{service}/{user}(service=${service}, user=${user.getId().toString()})}">
                             <button class="mdl-button mdl-js-button mdl-button--ico" style="display: inline">
                                 <i class="material-icons">add</i>
                             </button>

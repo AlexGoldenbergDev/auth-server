@@ -10,7 +10,7 @@ public class AppConfig {
     ServerConfiguration server;
     int signUpTokenExpirationHours;
     int passwordResetTokenExpirationHours;
-    AssignmentsConfiguration assignments;
+    ServicesConfiguration services;
     SecurityConfiguration security;
     List<String> roles;
     int defaultRoleIndex;

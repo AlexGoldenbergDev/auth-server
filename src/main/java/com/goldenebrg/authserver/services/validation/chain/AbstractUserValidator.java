@@ -12,10 +12,6 @@ abstract class AbstractUserValidator<T> implements UserValidator<T> {
         this.configurationService = serverConfigurationService;
     }
 
-    public UserValidator<T> getNext() {
-        return next;
-    }
-
     @Override
     public void setNext(UserValidator<T> next) {
         this.next = next;

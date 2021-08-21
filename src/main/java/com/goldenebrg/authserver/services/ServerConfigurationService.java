@@ -1,9 +1,9 @@
 package com.goldenebrg.authserver.services;
 
-import com.goldenebrg.authserver.services.config.AssignmentInputField;
-import com.goldenebrg.authserver.services.config.AssignmentJson;
-import com.goldenebrg.authserver.services.config.AssignmentSelectionListField;
 import com.goldenebrg.authserver.services.config.ConstrainPattern;
+import com.goldenebrg.authserver.services.config.ServiceInputField;
+import com.goldenebrg.authserver.services.config.ServiceJson;
+import com.goldenebrg.authserver.services.config.ServiceSelectionListField;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 public interface ServerConfigurationService {
 
-    Map<String, AssignmentJson> getAssignments();
+    Map<String, ServiceJson> getServices();
 
     @NotNull @NotEmpty List<String> getRoles();
 
@@ -47,17 +47,17 @@ public interface ServerConfigurationService {
 
     List<String> getCorsHeaders();
 
-    Set<String> getAssignmentChangers(String assignment);
+    Set<String> getServicesChangers(String service);
 
     String getAdminRole();
 
-    Set<String> getAssignmentsNames(String role);
+    Set<String> getServicesNames(String role);
 
-    boolean isAssignmentExists(String assignment);
+    boolean isServiceExists(String service);
 
-    boolean isAssignmentNotExists(String assignment);
+    boolean isServiceNotExists(String service);
 
-    Map<String, AssignmentInputField> getAssignmentInputFieldsMap(String assignment);
+    Map<String, ServiceInputField> getServicesInputFieldsMap(String service);
 
-    Map<String, AssignmentSelectionListField> getAssignmentSelectionListFieldsMap(String assignment);
+    Map<String, ServiceSelectionListField> getServicesSelectionListFieldsMap(String service);
 }

@@ -29,7 +29,7 @@
     <div class="row" style="height: 30vh"></div>
 
 
-    <form class="login-box" method="POST" th:action="@{/signup}" th:object="${user}">
+    <form class="login-box" method="POST" th:action="@{/signup/}" th:object="${user}">
         <input th:name="${_csrf.parameterName}"
                th:value="${_csrf.token}"
                type="hidden"/>

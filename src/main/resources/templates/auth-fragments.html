@@ -12,13 +12,13 @@
 <div class="row sub-panel" th:fragment="auth-header">
     <div class="col-10">
         <div class="row" sec:authorize="hasRole('ADMIN')">
-            <a href="/admin/invitations">
+            <a href="/admin/invitations/">
                 <button class="mdl-button mdl-js-button mdl-button--raised">Invitations Manager</button>
             </a>
-            <a href="/admin/assignments">
-                <button class="mdl-button mdl-js-button mdl-button--raised">Assignments Manager</button>
+            <a href="/admin/services/">
+                <button class="mdl-button mdl-js-button mdl-button--raised">Services Manager</button>
             </a>
-            <a href="/admin/users">
+            <a href="/admin/users/">
                 <button class="mdl-button mdl-js-button mdl-button--raised">User Manager</button>
             </a>
         </div>

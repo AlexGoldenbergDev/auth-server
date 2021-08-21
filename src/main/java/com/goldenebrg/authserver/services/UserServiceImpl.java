@@ -98,9 +98,11 @@ public class UserServiceImpl implements UserService{
     public void changeRole(ChangeRoleDto dto) {
         if (configurationService.getRoles().contains(dto.getRole())) {
             String id = dto.getId();
+
             findById(UUID.fromString(id)).ifPresent(user -> {
-                configurationService.getRoles();
-                user.setRole(dto.getRole());
+                String role = dto.getRole();
+                log.debug("Changing user {} role to {}", id, role);
+                user.setRole(role);
                 userDao.save(user);
             });
         }

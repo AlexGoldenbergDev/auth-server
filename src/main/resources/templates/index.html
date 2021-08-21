@@ -30,12 +30,12 @@
     <div th:replace="auth-fragments :: auth-header"></div>
 
 
-    <form class="row sub-panel" method='POST' th:action="@{/assignments/edit/}"
-          th:if="${!availableServices.isEmpty()}" th:object="${assignmentToAdd}">
+    <form class="row sub-panel" method='POST' th:action="@{/services/edit/}"
+          th:if="${availableServices != null && !availableServices.isEmpty()}" th:object="${serviceToAdd}">
 
         <div class="mdl-textfield mdl-js-textfield getmdl-select">
             <input class="mdl-textfield__input" id="new-service-input" readonly
-                   th:field="*{assignment}"
+                   th:field="*{service}"
                    type="text">
             <input name="new-service-input" type="hidden">
             <i class="mdl-icon-toggle__label material-icons">keyboard_arrow_down</i>
@@ -54,11 +54,12 @@
     </form>
 
     <div class="row sub-panel">
-        <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
-            <tr th:each="service : ${assignments.entrySet()}">
+        <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp"
+               th:if="${services != null}">
+            <tr th:each="service : ${services.entrySet()}">
                 <td class="mdl-data-table__cell--non-numeric" th:utext="${service.key}"></td>
                 <td class="mdl-data-table__cell--non-numeric">
-                    <form th:action="@{'/assignments/delete/{service}'(service=${service.key})}" th:method="DELETE">
+                    <form th:action="@{'/services/delete/{service}'(service=${service.key})}" th:method="DELETE">
                         <input th:name="${_csrf.parameterName}"
                                th:value="${_csrf.token}"
                                type="hidden"
@@ -71,7 +72,7 @@
                 <td class="mdl-data-table__cell--non-numeric">
 
                     <form
-                            method='POST' th:action="@{'/assignments/edit/{service}' (service=${service.key})}">
+                            method='POST' th:action="@{'/services/edit/{service}' (service=${service.key})}">
                         <input th:name="${_csrf.parameterName}"
                                th:value="${_csrf.token}"
                                type="hidden"
